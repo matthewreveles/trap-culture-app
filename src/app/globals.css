@@ -1,13 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind entry point */
+@import "tailwindcss";
 
-/* Global color tokens */
+/* Theme variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -15,8 +22,14 @@
   }
 }
 
-/* Basic global styles */
+/* Base styles */
 body {
-  background-color: var(--background);
+  background: var(--background);
   color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Utility */
+* {
+  @apply antialiased;
 }
