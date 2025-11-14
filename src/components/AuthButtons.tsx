@@ -1,24 +1,27 @@
 "use client";
-import { useSession, signIn, signOut } from "next-auth/react";
 
-export function AuthButtons() {
-  const { data: session, status } = useSession();
+import { signIn, signOut, useSession } from "next-auth/react";
 
-  if (status === "loading") return null;
+export default function AuthButtons() {
+  const { data: session } = useSession();
 
-  if (session) {
+  if (!session) {
     return (
-      <div className="flex items-center gap-3">
-        <span className="text-sm opacity-80">{session.user?.email}</span>
-        <button onClick={() => signOut()} className="px-3 py-1 rounded bg-zinc-800">
-          Sign out
-        </button>
-      </div>
+      <button
+        onClick={() => signIn()}
+        className="px-4 py-2 text-sm bg-white text-black rounded"
+      >
+        Sign In
+      </button>
     );
   }
+
   return (
-    <button onClick={() => signIn("github")} className="px-3 py-1 rounded bg-zinc-800">
-      Sign in with GitHub
+    <button
+      onClick={() => signOut()}
+      className="px-4 py-2 text-sm bg-red-600 text-white rounded"
+    >
+      Sign Out
     </button>
   );
 }

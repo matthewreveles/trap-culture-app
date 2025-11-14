@@ -1,35 +1,26 @@
 // prisma/schema.prisma
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
   id            String    @id @default(cuid())
+  email         String    @unique
   name          String?
-  email         String?   @unique
-  emailVerified DateTime?
   image         String?
-
-  // Credentials auth
   passwordHash  String?
-
-  // Customer profile fields
-  phone         String?   // e.g. "+14805551234"
-  address       String?   // free-form postal address
-
-  // NextAuth relations
-  accounts       Account[]
-  sessions       Session[]
-  authenticators Authenticator[]
-
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // NextAuth relations
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model Account {
@@ -38,18 +29,15 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
 }
 
 model Session {
@@ -59,8 +47,6 @@ model Session {
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model VerificationToken {
@@ -69,17 +55,4 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-model Authenticator {
-  id         String @id @default(cuid())
-  userId     String
-  provider   String
-  credential String @db.Text
-  counter    Int    @default(0)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, provider])
-  @@index([userId])
 }

@@ -1,14 +1,12 @@
 "use client";
-import { useSession, signIn } from "next-auth/react";
-import { useEffect } from "react";
 
-export default function ProtectedClient({ children }: { children: React.ReactNode }) {
-  const { status } = useSession(); // "loading" | "authenticated" | "unauthenticated"
+import { useSession } from "next-auth/react";
 
-  useEffect(() => {
-    if (status === "unauthenticated") signIn(undefined, { callbackUrl: "/dashboard" });
-  }, [status]);
+export default function ProtectedClient({ children }) {
+  const { status } = useSession();
 
-  if (status === "loading") return <p className="p-8 text-white">Checking session…</p>;
+  if (status === "loading") return null;
+  if (status === "unauthenticated") return null;
+
   return <>{children}</>;
 }

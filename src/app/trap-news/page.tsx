@@ -1,63 +1,41 @@
 // src/app/trap-news/page.tsx
-export const revalidate = 600;
-export const dynamic = "force-static";
-export const runtime = "nodejs";
 
-import { fetchTrapNewsPage } from "@/lib/trapNews";
-import NewsListClient from "@/components/NewsListClient";
-import FitHeading from "@/components/FitHeading";
-import FitText from "@/components/FitText";
+import { getInitialItems } from "@/lib/trapNews";
+import NewsListClient, { NewsItem } from "@/components/NewsListClient";
 
 export default async function TrapNewsPage() {
-  const pageSize = 10;
-  const initialItems = await fetchTrapNewsPage(1, pageSize);
+  // Fetch TrapNewsItem[] from server
+  const trapItems = await getInitialItems();
+
+  // Convert TrapNewsItem → NewsItem shape required by NewsListClient
+  const initialItems: NewsItem[] = trapItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+    url: item.url, // valid as string because NewsItem uses Link's own href type
+    image: item.image ?? null,
+    publishedAt: item.publishedAt ?? null,
+    source: item.source ?? null,
+  }));
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pt-24 pb-28 space-y-8">
-      {/* ───── Hero Header ───── */}
-      <header className="text-center space-y-6">
-        {/* Responsive auto-fitting headline */}
-        <FitHeading
-          className="mx-auto max-w-full"
-          min={56}
-          max={180}
-        />
-
-        {/* Responsive tagline with gradient + underline “Lit” */}
-        <FitText
-          className="mx-auto max-w-full text-white/80"
-          min={16}
-          max={28}
-          style={{
-            fontWeight: 500,
-            letterSpacing: "-0.015em",
-            fontStyle: "italic",
-          }}
-        >
-          <span>All the news that’s </span>
-          <span className="tc-underline-grad">
-            <span className="tc-gradient-text font-extrabold italic">
-              Lit
-            </span>
-          </span>
+    <main className="min-h-screen px-4 py-16 md:px-8 lg:px-16">
+      <header className="max-w-4xl mx-auto mb-12 space-y-4 text-center">
+        <h1 className="font-bold tracking-tight text-4xl">
+          <span>All the news that</span>{" "}
+          <span className="tc-gradient-text font-extrabold italic">lit</span>
           <span> to print!</span>
-        </FitText>
+        </h1>
 
-        {/* Divider line using global gradient */}
+        <p className="text-sm text-neutral-400">
+          Trap Culture headlines, drops, events, and weird weed stories pulled
+          together in one place.
+        </p>
       </header>
 
-      {/* ───── Content Feed ───── */}
-      {!initialItems.length ? (
-        <p className="text-white/70 text-center">
-          No posts found yet. Check back soon.
-        </p>
-      ) : (
-        <NewsListClient
-          initialItems={initialItems}
-          initialPage={1}
-          pageSize={pageSize}
-        />
-      )}
+      <NewsListClient
+        initialItems={initialItems}
+        loadMoreUrl="/api/trap-news"
+      />
     </main>
   );
 }

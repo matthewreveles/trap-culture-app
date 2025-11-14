@@ -1,144 +1,111 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import SafeImage from "@/components/SafeImage";
+import Image from "next/image";
 
-type Item = {
+/**
+ * NewsItem — relaxed URL typing so server strings are valid.
+ */
+export type NewsItem = {
   id: string;
   title: string;
-  url: string;
-  excerpt?: string;
-  image?: string;
-  category?: string;
-  isoDate?: string;
+  url: string | URL | { pathname: string; query?: Record<string, any> };
+  image?: string | null;
+  publishedAt?: string | null;
+  source?: string | null;
 };
 
-type ApiResp = {
-  page: number;
-  pageSize: number;
-  total: number;
-  items: Item[];
-  hasMore: boolean;
+type NewsListClientProps = {
+  initialItems: NewsItem[];
+  loadMoreUrl: string;
 };
 
 export default function NewsListClient({
   initialItems,
-  initialPage = 1,
-  pageSize = 20,
-}: {
-  initialItems: Item[];
-  initialPage?: number;
-  pageSize?: number;
-}) {
-  const [items, setItems] = useState<Item[]>(initialItems);
-  const [page, setPage] = useState<number>(initialPage);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(initialItems.length === pageSize);
-  const [error, setError] = useState<string | null>(null);
+  loadMoreUrl,
+}: NewsListClientProps) {
+  const [items, setItems] = useState<NewsItem[]>(initialItems);
+  const [loading, setLoading] = useState(false);
+  const [finished, setFinished] = useState(false);
 
-  const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+  async function loadMore() {
+    if (loading || finished) return;
+
     setLoading(true);
-    setError(null);
+
     try {
-      const res = await fetch(
-        `/api/trap-news?page=${page + 1}&pageSize=${pageSize}`,
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${loadMoreUrl}?cursor=${items.length}`);
+      const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(`Request failed: ${res.status}`);
+      if (!data.items || data.items.length === 0) {
+        setFinished(true);
+        return;
       }
 
-      const data: ApiResp = await res.json();
-
-      if (Array.isArray(data.items)) {
-        setItems((prev) => [...prev, ...data.items]);
-        setPage(data.page ?? page + 1);
-        setHasMore(Boolean(data.hasMore));
-      } else {
-        // Defensive: unexpected payload shape
-        setHasMore(false);
-      }
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load more");
+      setItems((prev) => [...prev, ...data.items]);
+    } catch (err) {
+      console.error("Error loading more news:", err);
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page, pageSize]);
+  }
 
   return (
-    <>
-      <ul className="space-y-3">
+    <div className="w-full space-y-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
         {items.map((item) => (
-          <li
-            key={item.id}
-            className="rounded-xl overflow-hidden border flex gap-4 p-3 backdrop-blur-sm tc-glow-card"
-            style={{
-              backgroundColor: "rgba(255, 248, 225, 0.08)",
-              borderColor: "rgba(255,255,255,0.08)",
-            }}
-          >
+          <div key={item.id} className="flex flex-col gap-3">
             <Link
-              href={item.url}
+              href={item.url as any}
               className="relative shrink-0 w-[112px] h-[112px] md:w-[140px] md:h-[140px] rounded-md overflow-hidden tc-glow-img tc-pulse"
             >
               {item.image ? (
-                <SafeImage
+                <Image
                   src={item.image}
                   alt={item.title}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 112px, 140px"
                 />
               ) : (
-                <div
-                  className="w-full h-full"
-                  style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-                />
+                <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-400">
+                  No Image
+                </div>
               )}
             </Link>
 
-            <div className="min-w-0 flex-1 text-neutral-100">
-              <Link href={item.url} className="group">
-                <h3 className="font-semibold leading-snug group-hover:text-white transition-colors line-clamp-2">
-                  {item.title}
-                </h3>
-                {item.excerpt && (
-                  <p className="mt-1 text-sm text-neutral-400 line-clamp-2">
-                    {item.excerpt}
-                  </p>
-                )}
+            <div className="flex flex-col gap-1">
+              <Link
+                href={item.url as any}
+                className="text-sm font-medium leading-tight line-clamp-2 hover:underline"
+              >
+                {item.title}
               </Link>
-              {/* meta row intentionally omitted */}
-            </div>
-          </li>
-        ))}
-      </ul>
 
-      {/* Error + Load More */}
-      <div className="flex flex-col items-center pt-4 pb-24">
-        {error && (
-          <p className="mb-2 text-xs text-red-300/90">
-            {error}
-          </p>
-        )}
-        {hasMore && (
+              {(item.source || item.publishedAt) && (
+                <span className="text-xs text-neutral-500">
+                  {item.source ? `${item.source} — ` : ""}
+                  {item.publishedAt
+                    ? new Date(item.publishedAt).toLocaleDateString()
+                    : ""}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {!finished && (
+        <div className="flex justify-center">
           <button
             onClick={loadMore}
             disabled={loading}
-            className="px-4 py-2 rounded-lg border text-sm hover:bg-white/5 disabled:opacity-60"
-            style={{
-              borderColor: "rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.85)",
-            }}
-            aria-busy={loading}
+            className="px-4 py-2 rounded-md border border-neutral-700 text-sm hover:bg-neutral-800 disabled:opacity-50"
           >
-            {loading ? "Loading…" : "Load more"}
+            {loading ? "Loading…" : "Load More"}
           </button>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,32 +1,53 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { hash } from "bcrypt";
+import prisma from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json();
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email and password are required." },
+        { status: 400 }
+      );
     }
 
-    const lower = String(email).toLowerCase().trim();
+    const lower = email.toLowerCase().trim();
 
-    const existing = await prisma.user.findUnique({ where: { email: lower } });
+    const existing = await prisma.user.findUnique({
+      where: { email: lower },
+    });
+
     if (existing) {
-      return NextResponse.json({ error: "Email already in use." }, { status: 409 });
+      return NextResponse.json(
+        { error: "Email already in use." },
+        { status: 409 }
+      );
     }
 
-    const passwordHash = await hash(String(password), 12);
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
-      data: { name: name?.trim() || null, email: lower, passwordHash },
-      select: { id: true, email: true, name: true },
+      data: {
+        name: name?.trim() || null,
+        email: lower,
+        passwordHash,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
     });
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
     console.error("[REGISTER_ERROR]", err);
-    return NextResponse.json({ error: "Unexpected error." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Unexpected server error." },
+      { status: 500 }
+    );
   }
 }
