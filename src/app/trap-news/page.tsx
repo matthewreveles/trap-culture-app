@@ -1,6 +1,6 @@
 // src/app/trap-news/page.tsx
 
-export const revalidate = 600;
+export const revalidate = 600; // ISR every 10 minutes
 
 import { fetchTrapNews } from "scripts/fetchTrapNews";
 import NewsListClient, {

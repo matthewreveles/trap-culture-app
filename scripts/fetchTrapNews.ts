@@ -26,7 +26,10 @@ async function getTrapNewsCategoryId(): Promise<number | null> {
   try {
     const res = await fetch(
       `${BASE_URL}/wp-json/wp/v2/categories?slug=trap-news`,
-      { cache: "no-store" }
+      {
+        // Respect the route-level `revalidate = 600`
+        next: { revalidate: 600 },
+      }
     );
 
     if (!res.ok) {
@@ -45,7 +48,7 @@ async function getTrapNewsCategoryId(): Promise<number | null> {
 
 export async function fetchTrapNews(limit = 60): Promise<TrapNewsItem[]> {
   try {
-    const perPage = Math.min(limit, 40); // WP default max is 100; keep it reasonable
+    const perPage = Math.min(limit, 40); // keep it reasonable
     const catId = await getTrapNewsCategoryId();
 
     const url =
@@ -53,7 +56,10 @@ export async function fetchTrapNews(limit = 60): Promise<TrapNewsItem[]> {
         ? `${BASE_URL}/wp-json/wp/v2/posts?categories=${catId}&per_page=${perPage}&_embed=1`
         : `${BASE_URL}/wp-json/wp/v2/posts?per_page=${perPage}&_embed=1`;
 
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, {
+      // Again, lean on ISR every 10 minutes
+      next: { revalidate: 600 },
+    });
 
     if (!res.ok) {
       console.error("Trap News posts fetch failed", res.status);
