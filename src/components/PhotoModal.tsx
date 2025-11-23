@@ -57,7 +57,6 @@ export default function PhotoModal({ photo, onClose }: Props) {
           Close
         </button>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photo.imageUrl}
           alt={photo.caption || "Trap Culture event photo"}

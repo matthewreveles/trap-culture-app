@@ -73,7 +73,6 @@ export default function FitHeading({
   // Run on mount + on resize
   useLayoutEffect(() => {
     fit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -83,7 +82,6 @@ export default function FitHeading({
     const ro = new ResizeObserver(() => fit());
     ro.observe(el);
     return () => ro.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const common = {

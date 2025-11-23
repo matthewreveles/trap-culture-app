@@ -1,15 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import MobileMenu from "./MobileMenu";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
-  const [logoSrc, setLogoSrc] = useState("/trapculturehoriz.png");
-  const fallbackLogo = "/trapculturehorizwithface.png";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -23,8 +19,7 @@ export default function Navbar() {
       <nav
         data-scrolled={scrolled}
         aria-label="Primary"
-        className="fixed inset-x-0 top-0 z-[80] h-16 flex items-center justify-between px-3 sm:px-4
-                   bg-black/30 backdrop-blur-md border-b border-white/10"
+        className="glass-nav fixed inset-x-0 top-0 z-[80] h-16 flex items-center justify-between px-3 sm:px-4"
       >
         {/* Hamburger */}
         <button
@@ -41,20 +36,17 @@ export default function Navbar() {
           <span className="block h-[2px] w-5 bg-white" />
         </button>
 
-        {/* Center logo */}
-        <Link href="/" className="mx-auto select-none" aria-label="Trap Culture home">
-          <Image
-            src={logoSrc}
-            alt="Trap Culture"
-            width={520}
-            height={128}
-            priority
-            className="h-8 w-auto sm:h-10"
-            onError={() => setLogoSrc(fallbackLogo)}
-          />
+        {/* Center text logo */}
+        <Link
+          href="/"
+          className="trap-brand mx-auto"
+          aria-label="Trap Culture home"
+        >
+          <span className="font-semibold">TRAP</span>
+          <span className="text-orange-400"> CULTURE</span>
         </Link>
 
-        <div className="h-10 w-10" />
+        <div className="h-10 w-10" aria-hidden />
       </nav>
 
       <MobileMenu isOpen={open} onOpenChange={setOpen} />
