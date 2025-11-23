@@ -20,13 +20,12 @@ export default async function TrapNewsPage() {
         <h1
           className="
             font-racing
-            font-[900]
+            font-normal
             uppercase
             text-left
-            leading-[0.80]
-            tracking-[-0.03em]
-            text-[125px]
-            md:text-[210px]
+            leading-[0.82]
+            tracking-[-0.025em]
+            text-[clamp(3.75rem,12vw,13rem)]
           "
         >
           <span className="block">TRAP</span>

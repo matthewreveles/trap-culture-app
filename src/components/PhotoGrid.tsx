@@ -51,7 +51,6 @@ export default function PhotoGrid({ photos, onPhotoClick }: Props) {
           >
             {/* 1:1 square thumbnail */}
             <div className="aspect-square w-full relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photo.imageUrl}
                 alt={photo.caption || 'Trap Culture event photo'}

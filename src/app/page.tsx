@@ -17,15 +17,6 @@ export default function HomePage() {
           priority
           className="drop-shadow-[0_0_80px_rgba(232,87,255,0.7)]"
         />
-
-        {/* Optional smaller horizontal logo with face, above footer */}
-        <Image
-          src="/trapculturehorizwithface.png"
-          alt="Trap Culture Trap News"
-          width={260}
-          height={80}
-          className="mt-4 opacity-80"
-        />
       </div>
     </main>
   );
