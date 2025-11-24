@@ -12,7 +12,7 @@ export default function Header() {
             width={640}
             height={640}
             priority
-            className="hero-glow w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto"
+            className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto rounded-full drop-shadow-[0_0_45px_rgba(58,17,78,0.95)]"
           />
         </div>
       </section>

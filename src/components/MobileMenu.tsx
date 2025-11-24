@@ -2,25 +2,29 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import ThemeToggleFab from "./ThemeToggleFab";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import type { Route } from "next";
+import { useLanguage } from "@/context/LanguageContext";
 
 type Props = { isOpen: boolean; onOpenChange: (next: boolean) => void };
 type NavItem = { href: Route; label: string };
-
-const mainItems: NavItem[] = [
-  { href: "/", label: "Home" },
-  { href: "/trap-news", label: "Trap News" },
-  { href: "/shop", label: "Shop" },
-  { href: "/about", label: "About" },
-];
 
 export default function MobileMenu({ isOpen, onOpenChange }: Props) {
   const pathname = usePathname();
   const { status } = useSession();
   const [eventsOpen, setEventsOpen] = useState(false); // submenu open by default
+  const { dictionary } = useLanguage();
+  const navCopy = dictionary.nav;
+  const authCopy = dictionary.auth;
+  const mainItems: NavItem[] = [
+    { href: "/", label: navCopy.home },
+    { href: "/trap-news", label: navCopy.trapNews },
+    { href: "/shop", label: navCopy.shop },
+    { href: "/about", label: navCopy.about },
+  ];
 
   // Close menu on Escape key
   useEffect(() => {
@@ -47,24 +51,26 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
       <aside
         id="mobile-menu"
         aria-hidden={!isOpen}
-        className={`sheet-glass fixed inset-y-0 left-0 z-[90] w-[80vw] max-w-xs p-4 transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 z-[90] p-0 transition-transform duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{ height: 'auto', minHeight: '100vh' }}
       >
+        {/* Menu container with frosted glass effect, width fits content */}
+        <div className="mt-0 ml-0 bg-black/40 backdrop-blur-md shadow-xl border-r border-white/10 rounded-r-2xl px-4 py-4 w-fit min-w-[180px] max-w-[90vw]">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <div className="text-sm text-white/70">Menu</div>
+          <div className="text-sm text-white/70">{navCopy.menuTitle}</div>
           <button
             type="button"
             className="rounded-lg border border-white/50 px-2 py-1 text-xs text-white/80 hover:text-white hover:border-white"
             onClick={() => onOpenChange(false)}
           >
-            Close
+            {navCopy.close}
           </button>
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1">
+        <nav className="space-y-1 text-suns-deep-purple">
           {/* Simple items (Home, Trap News, Shop, About) */}
           {mainItems.map((item) => (
             <Link
@@ -85,16 +91,13 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
           <button
             type="button"
             onClick={() => setEventsOpen((v) => !v)}
-            className={`mt-2 flex w-full items-center justify-between rounded-md px-3 py-2 text-left ${
+            className={`mt-2 flex w-full items-center rounded-md px-3 py-2 text-left ${
               isEventsSectionActive
                 ? "bg-white/10 text-white"
                 : "text-white/80 hover:text-white hover:bg-white/10"
             }`}
           >
-            <span>Events</span>
-            <span className="text-xs opacity-80">
-              {eventsOpen ? "▾" : "▸"}
-            </span>
+            <span>{navCopy.events}</span>
           </button>
 
           {eventsOpen && (
@@ -108,7 +111,7 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
                     : "text-white/75 hover:text-white hover:bg-white/10"
                 }`}
               >
-                Upcoming Events
+                {navCopy.upcomingEvents}
               </Link>
 
               <Link
@@ -120,7 +123,7 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
                     : "text-white/75 hover:text-white hover:bg-white/10"
                 }`}
               >
-                Past Events
+                {navCopy.pastEvents}
               </Link>
             </div>
           )}
@@ -135,7 +138,7 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
                 onClick={() => onOpenChange(false)}
                 className="block rounded-md px-3 py-2 text-white/80 hover:text-white hover:bg-white/10"
               >
-                Dashboard
+                {authCopy.dashboard}
               </Link>
 
               <button
@@ -146,7 +149,7 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
                 }}
                 className="w-full text-left rounded-md px-3 py-2 text-white/80 hover:text-white hover:bg-white/10"
               >
-                Sign out
+                {authCopy.signOut}
               </button>
             </>
           ) : (
@@ -156,7 +159,7 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
                 onClick={() => onOpenChange(false)}
                 className="block rounded-md px-3 py-2 text-white/80 hover:text-white hover:bg-white/10"
               >
-                Sign in
+                {authCopy.signIn}
               </Link>
 
               <Link
@@ -164,12 +167,16 @@ export default function MobileMenu({ isOpen, onOpenChange }: Props) {
                 onClick={() => onOpenChange(false)}
                 className="block rounded-md px-3 py-2 text-white/80 hover:text-white hover:bg-white/10"
               >
-                Sign up
+                {authCopy.signUp}
               </Link>
             </>
           )}
         </nav>
-      </aside>
+        {/* Theme toggle floating action button */}
+        <ThemeToggleFab />
+
+      </div>
+    </aside>
     </Fragment>
   );
 }

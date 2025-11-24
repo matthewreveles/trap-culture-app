@@ -29,8 +29,8 @@ export default async function TrapNewsPage() {
             md:text-[210px]
           "
         >
-          <span className="block">TRAP</span>
-          <span className="block">NEWS</span>
+          <span className="block text-suns-purple light:text-black">TRAP</span>
+          <span className="block text-suns-purple light:text-black">NEWS</span>
         </h1>
 
         {/* Centered tagline */}

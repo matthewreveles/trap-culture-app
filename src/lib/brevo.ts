@@ -9,6 +9,14 @@ if (!BREVO_API_KEY) {
   console.warn("[BREVO] BREVO_API_KEY is not set. Brevo features will be skipped.");
 }
 
+type BrevoResult = {
+  ok: boolean;
+  status?: number;
+  skipped?: boolean;
+  reason?: string;
+  response?: string;
+};
+
 // Tiny helper to avoid repeating headers
 async function brevoFetch(path: string, init: RequestInit): Promise<Response> {
   if (!BREVO_API_KEY) {
@@ -45,8 +53,10 @@ type BrevoContactInput = {
 /**
  * Upsert contact into Brevo audience and optionally add to a default list.
  */
-export async function upsertBrevoContact(input: BrevoContactInput) {
-  if (!BREVO_API_KEY) return;
+export async function upsertBrevoContact(input: BrevoContactInput): Promise<BrevoResult> {
+  if (!BREVO_API_KEY) {
+    return { ok: false, skipped: true, reason: "BREVO_API_KEY is not configured" };
+  }
 
   const attributes: Record<string, any> = {};
 
@@ -79,7 +89,11 @@ export async function upsertBrevoContact(input: BrevoContactInput) {
   if (!res.ok && res.status !== 204) {
     const text = await res.text().catch(() => "");
     console.error("[BREVO_CONTACT_ERROR]", res.status, text);
+    return { ok: false, status: res.status, response: text || undefined };
   }
+
+  console.info(`[BREVO] Contact upsert success for ${input.email} (status ${res.status})`);
+  return { ok: true, status: res.status };
 }
 
 type BrevoWelcomeInput = {
@@ -92,13 +106,15 @@ type BrevoWelcomeInput = {
  * The unsubscribe link should be placed in the template itself,
  * styled small and inconspicuous at the bottom.
  */
-export async function sendBrevoWelcome(input: BrevoWelcomeInput) {
-  if (!BREVO_API_KEY || !BREVO_WELCOME_TEMPLATE_ID) return;
+export async function sendBrevoWelcome(input: BrevoWelcomeInput): Promise<BrevoResult> {
+  if (!BREVO_API_KEY || !BREVO_WELCOME_TEMPLATE_ID) {
+    return { ok: false, skipped: true, reason: "BREVO_API_KEY or BREVO_WELCOME_TEMPLATE_ID missing" };
+  }
 
   const templateId = Number(BREVO_WELCOME_TEMPLATE_ID);
   if (Number.isNaN(templateId)) {
     console.warn("[BREVO] BREVO_WELCOME_TEMPLATE_ID is not a number.");
-    return;
+    return { ok: false, skipped: true, reason: "BREVO_WELCOME_TEMPLATE_ID invalid" };
   }
 
   const body = {
@@ -127,5 +143,9 @@ export async function sendBrevoWelcome(input: BrevoWelcomeInput) {
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     console.error("[BREVO_WELCOME_ERROR]", res.status, text);
+    return { ok: false, status: res.status, response: text || undefined };
   }
+
+  console.info(`[BREVO] Welcome email queued for ${input.email} (status ${res.status})`);
+  return { ok: true, status: res.status };
 }

@@ -1,3 +1,55 @@
+/* Light mode styles */
+
+.light body {
+  background: #F8F8F8;
+  color: #8C5BFF;
+}
+
+.light .bg-surface {
+  background: #fff;
+}
+.light .border {
+  border-color: #E5E7EB;
+}
+.light .text-accent, .light a, .light .link {
+  color: #FF7A2A;
+}
+.light .text-primary {
+  color: #8C5BFF;
+}
+.light .bg-accent {
+  background: #FF7A2A;
+  color: #fff;
+}
+.light .btn, .light button, .light .button {
+  background: #fff;
+  color: #FF7A2A;
+  border: 1px solid #FF7A2A;
+  transition: background 0.2s, color 0.2s;
+}
+.light .btn:hover, .light button:hover, .light .button:hover {
+  background: #FF7A2A;
+  color: #fff;
+}
+.light input, .light textarea, .light select {
+  background: #fff;
+  color: #232323;
+  border: 1px solid #E5E7EB;
+}
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/BebasNeue-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Racing Sans One';
+  src: url('/fonts/RacingSansOne-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 /* Tailwind entry point */
 @import "tailwindcss";
 
