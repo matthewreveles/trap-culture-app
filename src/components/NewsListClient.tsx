@@ -2,7 +2,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Link from "next/link";
 import SafeImage from "@/components/SafeImage";
 
 export type TrapNewsItem = {
@@ -44,7 +43,7 @@ export default function NewsListClient({
       const data = await res.json();
 
       if (Array.isArray(data.items)) {
-        setItems((prev) => [...prev, ...data.items]);
+        setItems(prev => [...prev, ...data.items]);
         setPage(data.page || page + 1);
         setHasMore(Boolean(data.hasMore));
       }
@@ -56,7 +55,7 @@ export default function NewsListClient({
   return (
     <>
       <ul className="space-y-3">
-        {items.map((item) => {
+        {items.map(item => {
           const thumb =
             item.image ??
             item.thumbnail ??
@@ -67,16 +66,22 @@ export default function NewsListClient({
           return (
             <li
               key={item.id}
-              className="rounded-xl overflow-hidden border flex items-center gap-3 px-3 py-2 md:px-4 md:py-3 hover:shadow-lg transition-all backdrop-blur-sm"
-              style={{
-                backgroundColor: "rgba(255, 248, 225, 0.08)",
-                borderColor: "rgba(255, 255, 255, 0.08)",
-              }}
+              className="
+                flex items-center gap-3
+                overflow-hidden rounded-2xl border
+                px-3 py-2 md:px-4 md:py-3
+                transition-all backdrop-blur-sm
+                bg-trap-orange-soft text-trap-purple-dark border-trap-purple-dark/10
+                hover:shadow-lg
+                dark:bg-white/5 dark:text-trap-text-dark dark:border-white/12
+              "
             >
-              {/* 1:1 thumbnail kept square, but smaller so card feels 3–4:1 */}
-              <Link
+              {/* Thumbnail */}
+              <a
                 href={item.url}
-                className="relative shrink-0 w-[72px] h-[72px] md:w-[88px] md:h-[88px] rounded-md overflow-hidden"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-md md:h-[88px] md:w-[88px]"
               >
                 {thumb ? (
                   <SafeImage
@@ -87,25 +92,27 @@ export default function NewsListClient({
                     sizes="(max-width: 768px) 72px, 88px"
                   />
                 ) : (
-                  <div
-                    className="w-full h-full"
-                    style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-                  />
+                  <div className="h-full w-full bg-white/60 dark:bg-white/5" />
                 )}
-              </Link>
+              </a>
 
-              {/* Text block – forces the card to be a long horizontal bar */}
-              <div className="min-w-0 flex-1 text-neutral-100">
-                <Link href={item.url} className="group">
-                  <h3 className="text-sm md:text-base font-semibold leading-snug group-hover:text-white transition-colors line-clamp-2">
+              {/* Text block */}
+              <div className="min-w-0 flex-1">
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group"
+                >
+                  <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-trap-purple-dark group-hover:text-black md:text-base dark:text-white dark:group-hover:text-white">
                     {item.title}
                   </h3>
                   {item.excerpt && (
-                    <p className="mt-1 text-xs md:text-sm text-neutral-400 line-clamp-2">
+                    <p className="mt-1 line-clamp-2 text-xs leading-snug text-[#4c3659] md:text-sm dark:text-neutral-300">
                       {item.excerpt}
                     </p>
                   )}
-                </Link>
+                </a>
               </div>
             </li>
           );
@@ -117,13 +124,16 @@ export default function NewsListClient({
           <button
             onClick={loadMore}
             disabled={loading}
-            className="px-4 py-2 rounded-lg border text-sm hover:bg-white/5 disabled:opacity-60"
-            style={{
-              borderColor: "rgba(255, 255, 255, 0.12)",
-              color: "rgba(255, 255, 255, 0.85)",
-            }}
+            className="
+              rounded-full px-5 py-2
+              text-xs font-semibold uppercase tracking-[0.18em]
+              bg-trap-purple-dark text-white shadow-md
+              hover:scale-[1.02]
+              disabled:opacity-60
+              dark:bg-white dark:text-trap-purple-dark
+            "
           >
-            {loading ? "Loading…" : "Load more"}
+            {loading ? "Loading…" : "Load more stories"}
           </button>
         </div>
       )}

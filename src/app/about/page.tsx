@@ -1,30 +1,43 @@
 // src/app/about/page.tsx
+
 export const metadata = {
   title: "About • Trap Culture",
 };
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 pt-24 pb-28 space-y-8">
-      <header className="space-y-3">
-        <h1 className="text-[42px] leading-none font-extrabold tracking-tight">
-          <span className="tc-gradient-text">About</span>
+    <div className="mx-auto max-w-5xl px-4 pb-28 pt-24">
+      {/* Heading */}
+      <header className="mb-6">
+        <h1 className="font-bebas text-3xl tracking-[0.22em] text-trap-purple-dark dark:text-white">
+          ABOUT
         </h1>
-
-        <div className="tc-gradient-line" />
       </header>
 
-      <p className="text-white/80 leading-relaxed">
-        Trap Culture bridges Arizona’s underground creative scene with a
-        community-first approach to arts, cannabis, music, and events. Our
-        platform lifts local voices, documents culture, and amplifies the
-        movements shaping the Valley.
-      </p>
+      {/* Body card – orange in light, glassy in dark */}
+      <section
+        className="
+          rounded-3xl border
+          bg-trap-orange-soft/90 text-trap-purple-dark
+          px-5 py-6 sm:px-7 sm:py-8
+          shadow-[0_18px_40px_rgba(0,0,0,0.35)]
+          border-trap-purple-dark/12
 
-      <p className="text-white/70 leading-relaxed">
-        Whether through live events, our Trap News blog, or collaborations
-        across the city, we build spaces where authenticity thrives.
-      </p>
-    </main>
+          dark:bg-black/40 dark:text-gray-100 dark:border-white/10
+        "
+      >
+        <p className="text-sm leading-relaxed tracking-[0.06em] sm:text-base">
+          TRAP CULTURE BRIDGES ARIZONA&apos;S UNDERGROUND CREATIVE SCENE WITH A
+          COMMUNITY-FIRST APPROACH TO ARTS, CANNABIS, MUSIC, AND EVENTS. OUR
+          PLATFORM LIFTS LOCAL VOICES, DOCUMENTS CULTURE, AND AMPLIFIES THE
+          MOVEMENTS SHAPING THE VALLEY.
+        </p>
+
+        <p className="mt-5 text-sm leading-relaxed tracking-[0.06em] sm:text-base">
+          WHETHER THROUGH LIVE EVENTS, OUR TRAP NEWS BLOG, OR COLLABORATIONS
+          ACROSS THE CITY, WE BUILD SPACES WHERE AUTHENTICITY THRIVES.
+        </p>
+      </section>
+    </div>
   );
 }

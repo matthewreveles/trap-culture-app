@@ -1,7 +1,8 @@
+// src/components/Navbar.tsx
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 import MobileMenu from "./MobileMenu";
 import LanguageToggle from "./LanguageToggle";
@@ -29,9 +30,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const [logoSrc, setLogoSrc] = useState("/trapculturehoriz.png");
-  const fallbackLogo = "/trapculturehorizwithface.png";
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
     onScroll();
@@ -47,41 +45,58 @@ export default function Navbar() {
       <nav
         data-scrolled={scrolled}
         aria-label="Primary"
-        className="fixed inset-x-0 top-0 z-[80] h-16 flex items-center justify-between px-3 sm:px-4
-                   bg-black/30 backdrop-blur-md border-b border-white/10"
+        className={`
+          fixed inset-x-0 top-0 z-[80] h-16
+          flex items-center
+          backdrop-blur-md
+          border-b
+          bg-[#f8f8f8]/95 text-[#14081b]
+          dark:bg-[#111119]/92 dark:text-white
+          border-black/5 dark:border-white/10
+        `}
       >
-        {/* Hamburger */}
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? navCopy.hamburgerClose : navCopy.hamburgerOpen}
-          onClick={() => setOpen(v => !v)}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-suns-purple via-suns-gray to-suns-black shadow-lg border-2 border-white/30 hover:scale-105 transition-transform duration-200"
-        >
-          <span className="sr-only">Toggle menu</span>
-          <span className="block h-[3px] w-6 rounded bg-white shadow-sm" />
-          <span className="block h-[3px] w-6 rounded bg-white my-1 shadow-sm" />
-          <span className="block h-[3px] w-6 rounded bg-white shadow-sm" />
-        </button>
-
-        {/* Centered TRAP CULTURE text */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center select-none">
-          {/* TRAP: white in dark, black in light; CULTURE: orange in both */}
-          <span className="font-bebas text-3xl tracking-wide mr-2 text-white light:text-black">TRAP</span>
-          <span className="font-bebas text-3xl tracking-wide text-suns-orange !text-suns-orange" style={{ color: '#FF7A2A' }}>CULTURE</span>
-        </div>
-
-        {/* Cart + language toggle */}
-        <div className="flex items-center justify-end gap-2 min-w-[150px]">
-          <Link
-            href="/shop"
-            aria-label={navCopy.cartLabel}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-md text-white shadow-lg transition-transform duration-200 hover:scale-105"
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-3 sm:px-4">
+          {/* Left: Hamburger */}
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? navCopy.hamburgerClose : navCopy.hamburgerOpen}
+            onClick={() => setOpen((v) => !v)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-gradient-to-br from-suns-purple via-suns-gray to-suns-black text-white shadow-lg transition-transform duration-200 hover:scale-105 dark:border-white/30"
           >
-            <CartIcon />
-          </Link>
-          <LanguageToggle value={lang} onChange={setLang} />
+            <span className="sr-only">Toggle menu</span>
+            <span className="block h-[3px] w-6 rounded bg-white shadow-sm" />
+            <span className="my-1 block h-[3px] w-6 rounded bg-white shadow-sm" />
+            <span className="block h-[3px] w-6 rounded bg-white shadow-sm" />
+          </button>
+
+          {/* Center: TRAP CULTURE wordmark */}
+          <div className="flex flex-1 items-center justify-center">
+            <div className="flex items-baseline gap-1 select-none">
+              <span className="font-bebas text-2xl tracking-[0.18em] text-[#14081b] dark:text-white">
+                TRAP
+              </span>
+              <span className="font-bebas text-2xl tracking-[0.18em] text-suns-orange">
+                CULTURE
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Cart + language toggle */}
+          <div className="flex min-w-[150px] items-center justify-end gap-2">
+            <Link
+              href="/shop"
+              aria-label={navCopy.cartLabel}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-[#f4f4f4] text-[#14081b] shadow-md transition-transform duration-200 hover:scale-105 dark:border-white/30 dark:bg-black/40 dark:text-white"
+            >
+              <CartIcon />
+            </Link>
+
+            <div className="flex items-center rounded-full border border-suns-orange bg-white/95 px-1 py-0.5 shadow-[0_0_0_1px_rgba(255,122,42,0.35)] dark:border-suns-orange/60 dark:bg-[#111119]/95">
+              <LanguageToggle value={lang} onChange={setLang} />
+            </div>
+          </div>
         </div>
       </nav>
 

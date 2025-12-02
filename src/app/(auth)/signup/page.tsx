@@ -38,13 +38,14 @@ function SignupForm() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const labelClasses = "block text-xs mb-1 text-white/60 tracking-wide uppercase";
   const inputClasses =
     "w-full rounded-md border border-white/10 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-white/25 focus:outline-none focus:ring-1 focus:ring-white/40";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +87,6 @@ function SignupForm() {
       setSuccess(true);
       setLoading(false);
 
-      // small pause then send them to signin
       setTimeout(() => router.push("/signin"), 1500);
     } catch (err) {
       console.error("[SIGNUP_ERROR]", err);
@@ -96,15 +96,14 @@ function SignupForm() {
   };
 
   return (
-    <main className="max-w-md mx-auto px-4 pt-24 pb-32">
-      <h1 className="text-4xl font-bebas tracking-[0.3em] text-center mb-8">
-        TRAP FAM
+    <main className="mx-auto max-w-md px-4 pt-24 pb-32 text-foreground">
+      <h1 className="mb-8 text-center font-bebas text-4xl tracking-[0.3em] uppercase">
+        Trap Fam
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Name */}
         <div>
-          <label className={labelClasses}>Name</label>
+          <label className="tc-label">Name</label>
           <input
             name="name"
             value={form.name}
@@ -114,9 +113,8 @@ function SignupForm() {
           />
         </div>
 
-        {/* Email */}
         <div>
-          <label className={labelClasses}>Email</label>
+          <label className="tc-label">Email</label>
           <input
             type="email"
             name="email"
@@ -128,9 +126,8 @@ function SignupForm() {
           />
         </div>
 
-        {/* Phone */}
         <div>
-          <label className={labelClasses}>Phone (optional)</label>
+          <label className="tc-label">Phone (optional)</label>
           <input
             type="tel"
             name="phone"
@@ -141,9 +138,8 @@ function SignupForm() {
           />
         </div>
 
-        {/* Street address */}
         <div>
-          <label className={labelClasses}>Street address (optional)</label>
+          <label className="tc-label">Street address (optional)</label>
           <input
             name="street"
             value={form.street}
@@ -153,10 +149,9 @@ function SignupForm() {
           />
         </div>
 
-        {/* City + ZIP on one line */}
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className={labelClasses}>City</label>
+            <label className="tc-label">City</label>
             <input
               name="city"
               value={form.city}
@@ -166,7 +161,7 @@ function SignupForm() {
             />
           </div>
           <div className="flex-1">
-            <label className={labelClasses}>ZIP</label>
+            <label className="tc-label">ZIP</label>
             <input
               name="zip"
               value={form.zip}
@@ -177,9 +172,8 @@ function SignupForm() {
           </div>
         </div>
 
-        {/* State dropdown */}
         <div>
-          <label className={labelClasses}>State</label>
+          <label className="tc-label">State</label>
           <select
             name="state"
             value={form.state}
@@ -193,13 +187,11 @@ function SignupForm() {
             <option value="NV">NV</option>
             <option value="NM">NM</option>
             <option value="UT">UT</option>
-            {/* add more later if you want */}
           </select>
         </div>
 
-        {/* Country */}
         <div>
-          <label className={labelClasses}>Country</label>
+          <label className="tc-label">Country</label>
           <input
             name="country"
             value={form.country}
@@ -209,9 +201,8 @@ function SignupForm() {
           />
         </div>
 
-        {/* Password */}
         <div>
-          <label className={labelClasses}>Password</label>
+          <label className="tc-label">Password</label>
           <input
             type="password"
             name="password"
@@ -222,9 +213,8 @@ function SignupForm() {
           />
         </div>
 
-        {/* Confirm password */}
         <div>
-          <label className={labelClasses}>Confirm password</label>
+          <label className="tc-label">Confirm password</label>
           <input
             type="password"
             name="confirm"
@@ -235,9 +225,9 @@ function SignupForm() {
           />
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="tc-body-text-sm text-red-400">{error}</p>}
         {success && (
-          <p className="text-green-400 text-sm">
+          <p className="tc-body-text-sm text-green-400">
             Account created! Redirecting…
           </p>
         )}
@@ -245,7 +235,7 @@ function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 rounded-md border border-white/20 text-white font-medium hover:bg-white/10 transition disabled:opacity-50"
+          className="tc-button-primary w-full"
         >
           {loading ? "Creating…" : "Create account"}
         </button>

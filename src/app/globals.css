@@ -1,128 +1,149 @@
-/* Light mode styles */
-
-.light body {
-  background: #F8F8F8;
-  color: #8C5BFF;
-}
-
-.light .bg-surface {
-  background: #fff;
-}
-.light .border {
-  border-color: #E5E7EB;
-}
-.light .text-accent, .light a, .light .link {
-  color: #FF7A2A;
-}
-.light .text-primary {
-  color: #8C5BFF;
-}
-.light .bg-accent {
-  background: #FF7A2A;
-  color: #fff;
-}
-.light .btn, .light button, .light .button {
-  background: #fff;
-  color: #FF7A2A;
-  border: 1px solid #FF7A2A;
-  transition: background 0.2s, color 0.2s;
-}
-.light .btn:hover, .light button:hover, .light .button:hover {
-  background: #FF7A2A;
-  color: #fff;
-}
-.light input, .light textarea, .light select {
-  background: #fff;
-  color: #232323;
-  border: 1px solid #E5E7EB;
-}
-@font-face {
-  font-family: 'Bebas Neue';
-  src: url('/fonts/BebasNeue-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Racing Sans One';
-  src: url('/fonts/RacingSansOne-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-/* Tailwind entry point */
+/* ------------------------------------------------------- */
+/*                   IMPORT TAILWIND FIRST                 */
+/* ------------------------------------------------------- */
 @import "tailwindcss";
 
-/* Theme variables */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ------------------------------------------------------- */
+/*                        FONTS                            */
+/* ------------------------------------------------------- */
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/fonts/BebasNeue-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@font-face {
+  font-family: "Racing Sans One";
+  src: url("/fonts/RacingSansOne-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* Base styles */
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: inherit; /* next/font controls font */
-}
-
-/* Utility */
-* {
-  @apply antialiased;
-}
-
-/* Font helpers for Trap News */
+/* Font helpers (hooked to next/font variables) */
 .font-racing {
-  font-family: var(--font-racing-sans), system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-racing-sans), system-ui, sans-serif;
   font-style: italic;
   font-weight: 400;
 }
 
 .font-bebas {
-  font-family: var(--font-bebas-neue), system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-bebas-neue), system-ui, sans-serif;
 }
 
-/* -------------------------------------------------- */
-/* Phoenix Suns Gradient "Lit" with Underline + Glow */
-/* -------------------------------------------------- */
+/* ------------------------------------------------------- */
+/*                 THEME VARIABLES (ROOT)                  */
+/* ------------------------------------------------------- */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
 
+/* Tailwind theme mapping */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* ------------------------------------------------------- */
+/*                     DARK MODE DEFAULT                   */
+/* ------------------------------------------------------- */
+html.dark body {
+  background: #0a0a0a;
+  color: #f9fafb;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgba(249, 250, 251, 0.35);
+}
+
+/* ------------------------------------------------------- */
+/*                         LIGHT MODE                      */
+/* ------------------------------------------------------- */
+html.light body {
+  background: #f8f8f8;
+  color: #14081b;
+}
+
+html.light .bg-surface {
+  background: #ffffff;
+}
+
+html.light .border {
+  border-color: #e5e7eb;
+}
+
+html.light .text-accent,
+html.light a,
+html.light .link {
+  color: #ff7a2a;
+}
+
+html.light .text-primary {
+  color: #8c5bff;
+}
+
+html.light .bg-accent {
+  background: #ff7a2a;
+  color: #ffffff;
+}
+
+html.light .btn,
+html.light button,
+html.light .button {
+  background: #ffffff;
+  color: #ff7a2a;
+  border: 1px solid #ff7a2a;
+  transition: background 0.2s, color 0.2s;
+}
+
+html.light .btn:hover,
+html.light button:hover,
+html.light .button:hover {
+  background: #ff7a2a;
+  color: #ffffff;
+}
+
+html.light input,
+html.light textarea,
+html.light select {
+  background: #ffffff;
+  color: #232323;
+  border: 1px solid #e5e7eb;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: rgba(20, 8, 27, 0.35);
+}
+
+/* ------------------------------------------------------- */
+/*                     BASE / RESET                        */
+/* ------------------------------------------------------- */
+body {
+  font-family: inherit; /* next/font handles real font loading */
+}
+
+* {
+  @apply antialiased;
+}
+
+/* ------------------------------------------------------- */
+/*                  TRAP CULTURE SPECIAL FX                */
+/* ------------------------------------------------------- */
 .lit-gradient {
-  display: inline-block;          /* prevents iOS clipping */
-  padding-right: 0.15em;          /* gives the T room to breathe */
-
-  background: linear-gradient(
-    90deg,
-    #8C5BFF 0%,    /* darker Suns purple */
-    #FF7A2A 45%,   /* mids Suns orange */
-    #FFC857 100%   /* warm golden highlight */
-  );
-
+  display: inline-block;
+  padding-right: 0.15em;
+  background: linear-gradient(90deg, #8c5bff 0%, #ff7a2a 45%, #ffc857 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-
   position: relative;
   font-weight: 600;
   letter-spacing: 0.03em;
-
-  /* Soft glow behind the word for readability */
   text-shadow:
     0 0 6px rgba(0, 0, 0, 0.55),
     0 0 3px rgba(0, 0, 0, 0.35);
@@ -136,15 +157,235 @@ body {
   width: 100%;
   height: 4px;
   border-radius: 3px;
-
-  background: linear-gradient(
-    90deg,
-    #8C5BFF 0%,
-    #FF7A2A 45%,
-    #FFC857 100%
-  );
-
+  background: linear-gradient(90deg, #8c5bff 0%, #ff7a2a 45%, #ffc857 100%);
   box-shadow:
     0 0 6px rgba(0, 0, 0, 0.45),
     0 0 3px rgba(0, 0, 0, 0.3);
 }
+
+/* ------------------------------------------------------- */
+/*                  ABOUT PAGE GRADIENT                    */
+/* ------------------------------------------------------- */
+.tc-gradient-text {
+  background: linear-gradient(90deg, #ffffff 0%, #ff7a2a 45%, #ffc857 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tc-gradient-line {
+  width: 120px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8c5bff 0%, #ff7a2a 45%, #ffc857 100%);
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.45),
+    0 0 4px rgba(0, 0, 0, 0.25);
+}
+
+/* ------------------------------------------------------- */
+/*                     TRAP FAM STYLING                    */
+/* ------------------------------------------------------- */
+.trapfam-heading {
+  color: #ffffff;
+}
+
+html.light .trapfam-heading {
+  color: #14081b;
+}
+
+.trapfam-card {
+  background: radial-gradient(
+      circle at top left,
+      rgba(140, 91, 255, 0.16),
+      rgba(0, 0, 0, 0.85)
+    );
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.light .trapfam-card {
+  background: rgba(255, 122, 42, 0.08);
+  border-color: rgba(20, 8, 27, 0.18);
+}
+
+/* ------------------------------------------------------- */
+/*               SHARED TYPOGRAPHY HELPERS                 */
+/* ------------------------------------------------------- */
+.tc-body-text {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: rgba(249, 250, 251, 0.78);
+}
+
+html.light .tc-body-text {
+  color: rgba(20, 8, 27, 0.82);
+}
+
+.tc-body-text-sm {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(249, 250, 251, 0.72);
+}
+
+html.light .tc-body-text-sm {
+  color: rgba(20, 8, 27, 0.6);
+}
+
+.tc-section-title {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #ffffff;
+}
+
+html.light .tc-section-title {
+  color: #14081b;
+}
+
+/* ------------------------------------------------------- */
+/*               GENERIC CARD / LIST CARD STYLES           */
+/* ------------------------------------------------------- */
+.tc-card {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(
+      circle at top left,
+      rgba(140, 91, 255, 0.16),
+      rgba(0, 0, 0, 0.9)
+    );
+  color: #f9fafb;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tc-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 122, 42, 0.7);
+}
+
+html.light .tc-card {
+  background: #ffffff;
+  border-color: rgba(20, 8, 27, 0.12);
+  color: #14081b;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(20, 8, 27, 0.03);
+}
+
+html.light .tc-card:hover {
+  border-color: rgba(255, 122, 42, 0.9);
+}
+
+.tc-list-card {
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 7, 13, 0.92);
+  backdrop-filter: blur(12px);
+  color: #f9fafb;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+.tc-list-card:hover {
+  border-color: rgba(255, 122, 42, 0.85);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 122, 42, 0.2);
+  transform: translateY(-1px);
+}
+
+html.light .tc-list-card {
+  background: #ffffff;
+  border-color: rgba(20, 8, 27, 0.12);
+  color: #14081b;
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(20, 8, 27, 0.04);
+}
+
+html.light .tc-list-card:hover {
+  border-color: rgba(255, 122, 42, 0.9);
+}
+
+.tc-list-card-title {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.tc-list-card-excerpt {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(249, 250, 251, 0.70);
+}
+
+html.light .tc-list-card-excerpt {
+  color: rgba(20, 8, 27, 0.7);
+}
+
+/* ------------------------------------------------------- */
+/*                  HERO IMAGE (HOME HEADER)               */
+/* ------------------------------------------------------- */
+.tc-hero-image {
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at center,
+    rgba(140, 91, 255, 0.18),
+    transparent 60%
+  );
+  box-shadow:
+    0 0 45px rgba(20, 8, 27, 0.95),
+    0 0 0 1px rgba(0, 0, 0, 0.8);
+}
+
+/* ------------------------------------------------------- */
+/*     SHOPIFY BUY BUTTON — TRAP CUSTOMIZATION FIXES       */
+/* ------------------------------------------------------- */
+
+/* Remove Shopify’s default pink bubblegum button styles */
+.shopify-buy__btn {
+  background: linear-gradient(135deg, #ff008c, #00f0ff) !important;
+  color: #000 !important;
+  border-radius: 9999px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.18em !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Hover effect */
+.shopify-buy__btn:hover {
+  opacity: 0.9 !important;
+}
+
+/* Light mode adjustments */
+html.light .shopify-buy__btn {
+  background: #ffffff !important;
+  color: #14081b !important;
+  border: 1px solid #ff7a2a !important;
+}
+
+html.light .shopify-buy__btn:hover {
+  background: #ff7a2a !important;
+  color: #ffffff !important;
+}
+
+/* Dark mode version */
+html.dark .shopify-buy__btn {
+  background: #ff7a2a !important;
+  color: #ffffff !important;
+}
+

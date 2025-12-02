@@ -8,13 +8,11 @@ import NewsListClient, {
 } from "@/components/NewsListClient";
 
 export default async function TrapNewsPage() {
-  // Show 10 per page by default
   const pageSize = 10;
-
   const initialItems = (await fetchTrapNews(pageSize)) as TrapNewsItem[];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-24 pb-28 space-y-6">
+    <main className="mx-auto max-w-3xl px-4 pt-24 pb-28 space-y-6 text-foreground">
       {/* TRAP NEWS hero header */}
       <header className="mb-6 space-y-4">
         <h1
@@ -25,28 +23,33 @@ export default async function TrapNewsPage() {
             text-left
             leading-[0.80]
             tracking-[-0.03em]
-            text-[125px]
-            md:text-[210px]
+            text-[132px]
+            md:text-[220px]
           "
         >
-          <span className="block text-suns-purple light:text-black">TRAP</span>
-          <span className="block text-suns-purple light:text-black">NEWS</span>
+          <span className="block text-suns-purple">TRAP</span>
+          <span className="block text-suns-purple">NEWS</span>
         </h1>
 
-        {/* Centered tagline */}
-        <p className="text-center text-base md:text-lg italic text-gray-200 tracking-[0.05em]">
-          All the news that’s{" "}
-          <span className="lit-gradient">Lit</span>{" "}
-          to print!
+        {/* Byline / Kicker */}
+        <p className="tc-trapnews-kicker">
+          LIFESTYLE • EVENTS • CULTURE
+        </p>
+
+        {/* Tagline */}
+        <p className="tc-trapnews-tagline">
+          All the news that&apos;s{" "}
+          <span className="lit-gradient">LIT</span>{" "}
+          to print.
         </p>
       </header>
 
       {!initialItems.length ? (
-        <p className="text-white/70 text-center">
+        <p className="text-center text-foreground/70">
           No posts found yet. Check back soon.
         </p>
       ) : (
-        <section aria-label="Latest stories">
+        <section aria-label="Latest Trap News stories">
           <NewsListClient
             initialItems={initialItems}
             initialPage={1}
@@ -54,6 +57,6 @@ export default async function TrapNewsPage() {
           />
         </section>
       )}
-    </div>
+    </main>
   );
 }

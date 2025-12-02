@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-// Load Google Fonts correctly
 import { Racing_Sans_One, Bebas_Neue } from "next/font/google";
 
 import Providers from "./providers";
@@ -14,7 +13,6 @@ export const metadata: Metadata = {
   description: "Trap Culture — Lifestyle, News, Events, Shop",
 };
 
-// Racing Sans One (used specifically for TRAP NEWS header)
 const racingSans = Racing_Sans_One({
   subsets: ["latin"],
   weight: "400",
@@ -22,7 +20,6 @@ const racingSans = Racing_Sans_One({
   display: "swap",
 });
 
-// Bebas Neue (default font for the app)
 const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
@@ -36,9 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    // Default to dark mode; a future theme toggle can switch this class
+    <html lang="en" className="dark">
       <body
-        className={`${bebasNeue.className} ${racingSans.variable} bg-black text-white min-h-screen flex flex-col antialiased`}
+        className={`${bebasNeue.variable} ${racingSans.variable} min-h-screen flex flex-col`}
       >
         <Providers>
           <Navbar />

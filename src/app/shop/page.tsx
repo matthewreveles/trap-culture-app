@@ -3,7 +3,6 @@
 import type { Metadata } from "next";
 import BuyButtonAllProducts from "@/components/BuyButtonAllProducts";
 
-// This is allowed ONLY in a server component (no "use client" at the top)
 export const metadata: Metadata = {
   title: "Trap Culture Shop",
   description: "Browse all Trap Culture products via our Shopify catalog.",
@@ -11,21 +10,27 @@ export const metadata: Metadata = {
 
 export default function ShopPage() {
   return (
-    <div className="min-h-screen bg-black text-white pt-16">
-      {/* Header strip */}
-      <header className="mx-auto max-w-5xl px-4 py-4">
-        <h1 className="text-xl md:text-2xl font-semibold tracking-wide uppercase">
-          Trap Culture Shop
-        </h1>
-        <p className="text-sm text-white/60">
-          All products from the Trap Culture Shopify store.
-        </p>
-      </header>
+    <main className="min-h-screen bg-background text-foreground">
+      <section className="mx-auto max-w-6xl px-6 pt-24 pb-24">
+        <header className="mb-10 space-y-3">
+          <p className="tc-body-text-sm font-bebas tracking-[0.35em] uppercase">
+            Trap Culture Shop
+          </p>
 
-      {/* Shopify Buy Button "All Products" collection grid */}
-      <main className="mx-auto max-w-6xl px-4 pb-12">
-        <BuyButtonAllProducts />
-      </main>
-    </div>
+          <h1 className="tc-section-title font-bebas text-[40px] md:text-[52px] leading-none">
+            Shop the collection
+          </h1>
+
+          <p className="tc-body-text max-w-2xl text-muted-foreground">
+            All official Trap Culture merch, powered by our Shopify catalog.
+          </p>
+        </header>
+
+        <div className="rounded-3xl border border-border bg-card/80 p-4 md:p-6">
+          {/* Existing Shopify Buy Button "all products" grid */}
+          <BuyButtonAllProducts />
+        </div>
+      </section>
+    </main>
   );
 }

@@ -16,51 +16,59 @@ export default async function UpcomingEventsPage() {
   const events = await fetchEvents();
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-16 text-white">
-      <h1 className="text-5xl font-extrabold mb-10 tc-gradient-text">
-        Upcoming Events
-      </h1>
+    <main className="mx-auto max-w-5xl px-6 pt-24 pb-28 text-foreground">
+      <header className="mb-10 space-y-3">
+        <p className="font-bebas text-xs tracking-[0.35em] uppercase tc-body-text-sm">
+          Trap Culture Events
+        </p>
+
+        <h1 className="tc-section-title font-bebas text-[40px] md:text-[52px] leading-none tracking-[0.22em] uppercase">
+          Upcoming Events
+        </h1>
+      </header>
 
       {events.length === 0 && (
-        <p className="text-center text-white/70 py-16">
+        <p className="tc-body-text text-center pt-12">
           No upcoming events right now. Check back soon for the next session,
           show, or pop-up.
         </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-        {events.map((event: any) => (
-          <a
-            key={event.id}
-            href={`/events/${event.id}`}
-            className="block bg-[#0a0a0a] border border-[#222] rounded-xl overflow-hidden shadow-lg hover:border-fuchsia-600 transition"
-          >
-            {event.logo?.url && (
-              <Image
-                src={event.logo.url}
-                alt={event.name.text}
-                width={600}
-                height={400}
-                className="object-cover w-full h-48"
-              />
-            )}
+      {events.length > 0 && (
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+          {events.map((event: any) => (
+            <a
+              key={event.id}
+              href={`/events/${event.id}`}
+              className="tc-card block overflow-hidden transition hover:border-suns-orange/80"
+            >
+              {event.logo?.url && (
+                <Image
+                  src={event.logo.url}
+                  alt={event.name.text}
+                  width={600}
+                  height={400}
+                  className="h-48 w-full object-cover"
+                />
+              )}
 
-            <div className="p-5">
-              <h2 className="text-xl font-semibold mb-2">
-                {event.name.text}
-              </h2>
+              <div className="p-5">
+                <h2 className="mb-2 text-lg font-semibold leading-snug">
+                  {event.name.text}
+                </h2>
 
-              <p className="text-sm text-white/50 mb-2">
-                {new Date(event.start.local).toLocaleString()}
-              </p>
+                <p className="tc-body-text-sm mb-2">
+                  {new Date(event.start.local).toLocaleString()}
+                </p>
 
-              <p className="text-white/70 text-sm line-clamp-3">
-                {event.summary}
-              </p>
-            </div>
-          </a>
-        ))}
-      </div>
+                <p className="tc-body-text-sm line-clamp-3">
+                  {event.summary}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
