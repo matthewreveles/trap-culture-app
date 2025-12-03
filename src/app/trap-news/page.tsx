@@ -27,17 +27,17 @@ export default async function TrapNewsPage() {
             md:text-[220px]
           "
         >
-          <span className="block text-suns-purple">TRAP</span>
-          <span className="block text-suns-purple">NEWS</span>
+          <span className="block text-suns-purple dark:text-white">TRAP</span>
+          <span className="block text-suns-purple dark:text-white">NEWS</span>
         </h1>
 
         {/* Byline / Kicker */}
-        <p className="tc-trapnews-kicker">
+        <p className="tc-trapnews-kicker text-trap-purple-dark dark:text-white/70">
           LIFESTYLE • EVENTS • CULTURE
         </p>
 
         {/* Tagline */}
-        <p className="tc-trapnews-tagline">
+        <p className="tc-trapnews-tagline text-trap-purple-dark dark:text-neutral-100">
           All the news that&apos;s{" "}
           <span className="lit-gradient">LIT</span>{" "}
           to print.

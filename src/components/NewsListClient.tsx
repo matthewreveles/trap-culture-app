@@ -125,6 +125,7 @@ export default function NewsListClient({
             onClick={loadMore}
             disabled={loading}
             className="
+              trap-news-load-more
               rounded-full px-5 py-2
               text-xs font-semibold uppercase tracking-[0.18em]
               bg-trap-purple-dark text-white shadow-md

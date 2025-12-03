@@ -41,6 +41,11 @@
   --foreground: #171717;
 }
 
+html.dark {
+  --background: #050509;
+  --foreground: #f9fafb;
+}
+
 /* Tailwind theme mapping */
 @theme inline {
   --color-background: var(--background);
@@ -318,6 +323,24 @@ html.dark .language-toggle__button {
 
 html.dark .language-toggle__button.is-active {
   color: #050505;
+}
+
+.trap-news-load-more {
+  background: var(--trap-news-load-more-bg, #14081b);
+  color: var(--trap-news-load-more-text, #f9fafb);
+  border: none;
+}
+
+html.dark .trap-news-load-more {
+  background: #ffffff !important;
+  color: #14081b !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.light .trap-news-load-more {
+  background: #14081b;
+  color: #ffffff;
+  border: 1px solid rgba(20, 8, 27, 0.2);
 }
 
 /* ------------------------------------------------------- */
