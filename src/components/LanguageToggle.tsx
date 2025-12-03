@@ -1,5 +1,6 @@
 import React from "react";
 import type { SupportedLanguage } from "@/context/LanguageContext";
+import type { CSSProperties } from "react";
 
 type Props = {
   value: SupportedLanguage;
@@ -40,38 +41,30 @@ export default function LanguageToggle({ value, onChange, pillStyle }: Props) {
       </div>
     );
   }
-  const glowColor = value === "en" ? "#FF7A2A" : "#8C5BFF";
+  const glowColor = value === "en" ? "rgba(255, 122, 42, 0.55)" : "rgba(140, 91, 255, 0.5)";
+  const glowStyle = { "--language-toggle-glow": glowColor } as CSSProperties;
 
   return (
-    <div className="relative">
+    <div className="language-toggle" style={glowStyle}>
       <div
-        className="relative flex items-center rounded-full bg-black/50 backdrop-blur-md border border-white/20 shadow-lg px-0.5 py-0.5 transition-all duration-300 hover:scale-105"
-        style={{ boxShadow: `0 0 10px ${glowColor}` }}
+        className={`language-toggle__thumb ${value === "es" ? "language-toggle__thumb--right" : ""}`}
+      />
+      <button
+        type="button"
+        className={`language-toggle__button ${value === "en" ? "is-active" : ""}`}
+        onClick={() => onChange("en")}
+        aria-pressed={value === "en"}
       >
-        <div
-          className={`pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-0.25rem)] rounded-full bg-gradient-to-r from-[#FF7A2A] to-[#8C5BFF] transition-transform duration-300 ease-out ${
-            value === "es" ? "translate-x-full" : "translate-x-0"
-          }`}
-        />
-        <button
-          className={`relative z-10 flex-1 px-2.5 py-0.5 text-[0.65rem] font-semibold tracking-wide transition-colors duration-200 ${
-            value === "en" ? "text-black" : "text-white/70"
-          }`}
-          onClick={() => onChange("en")}
-          aria-pressed={value === "en"}
-        >
-          EN
-        </button>
-        <button
-          className={`relative z-10 flex-1 px-2.5 py-0.5 text-[0.65rem] font-semibold tracking-wide transition-colors duration-200 ${
-            value === "es" ? "text-black" : "text-white/70"
-          }`}
-          onClick={() => onChange("es")}
-          aria-pressed={value === "es"}
-        >
-          ES
-        </button>
-      </div>
+        EN
+      </button>
+      <button
+        type="button"
+        className={`language-toggle__button ${value === "es" ? "is-active" : ""}`}
+        onClick={() => onChange("es")}
+        aria-pressed={value === "es"}
+      >
+        ES
+      </button>
     </div>
   );
 }

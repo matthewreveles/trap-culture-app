@@ -93,9 +93,7 @@ export default function Navbar() {
               <CartIcon />
             </Link>
 
-            <div className="flex items-center rounded-full border border-suns-orange bg-white/95 px-1 py-0.5 shadow-[0_0_0_1px_rgba(255,122,42,0.35)] dark:border-suns-orange/60 dark:bg-[#111119]/95">
-              <LanguageToggle value={lang} onChange={setLang} />
-            </div>
+            <LanguageToggle value={lang} onChange={setLang} />
           </div>
         </div>
       </nav>

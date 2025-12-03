@@ -9,7 +9,7 @@ export default function AboutPage() {
     <div className="mx-auto max-w-5xl px-4 pb-28 pt-24">
       {/* Heading */}
       <header className="mb-6">
-        <h1 className="font-bebas text-3xl tracking-[0.22em] text-trap-purple-dark dark:text-white">
+        <h1 className="tc-about-heading font-bebas text-3xl tracking-[0.22em]">
           ABOUT
         </h1>
       </header>
@@ -17,13 +17,9 @@ export default function AboutPage() {
       {/* Body card – orange in light, glassy in dark */}
       <section
         className="
+          tc-about-card
           rounded-3xl border
-          bg-trap-orange-soft/90 text-trap-purple-dark
           px-5 py-6 sm:px-7 sm:py-8
-          shadow-[0_18px_40px_rgba(0,0,0,0.35)]
-          border-trap-purple-dark/12
-
-          dark:bg-black/40 dark:text-gray-100 dark:border-white/10
         "
       >
         <p className="text-sm leading-relaxed tracking-[0.06em] sm:text-base">
