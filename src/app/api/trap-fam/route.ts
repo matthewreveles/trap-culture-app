@@ -27,20 +27,16 @@ export async function POST(req: NextRequest) {
     const lowerEmail = email.toLowerCase();
     const now = new Date();
 
-    // They must check smsOptIn AND provide a valid phone number
     const hasPhone = Boolean(body.phone && body.phone.trim());
     const smsOptIn = Boolean(body.smsOptIn && hasPhone);
 
-    // Upsert user in database (source of truth)
+    // Only use fields that actually exist on the Prisma User model.
+    // We keep phone/city/state/etc for Brevo, but we don't try to persist
+    // them on the local User table until those columns exist.
     const user = await prisma.user.upsert({
       where: { email: lowerEmail },
       update: {
         name: body.name || undefined,
-        phone: hasPhone ? body.phone : undefined,
-        city: body.city || undefined,
-        state: body.state || undefined,
-        zip: body.zip || undefined,
-        country: body.country || undefined,
         smsOptIn,
         smsStatus: smsOptIn ? "active" : undefined,
         smsOptSource: smsOptIn ? "trap_fam_form" : undefined,
@@ -49,11 +45,6 @@ export async function POST(req: NextRequest) {
       create: {
         email: lowerEmail,
         name: body.name || null,
-        phone: hasPhone ? body.phone || null : null,
-        city: body.city || null,
-        state: body.state || null,
-        zip: body.zip || null,
-        country: body.country || null,
         smsOptIn,
         smsStatus: smsOptIn ? "active" : null,
         smsOptSource: smsOptIn ? "trap_fam_form" : null,
@@ -61,7 +52,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Sync email data to Brevo
+    // Send full profile to Brevo for segmentation
     const contactResult = await upsertBrevoContact({
       email: lowerEmail,
       name: body.name,
@@ -72,7 +63,6 @@ export async function POST(req: NextRequest) {
       country: body.country,
     });
 
-    // Send Brevo welcome email
     const welcomeResult = await sendBrevoWelcome({
       email: lowerEmail,
       name: body.name,
