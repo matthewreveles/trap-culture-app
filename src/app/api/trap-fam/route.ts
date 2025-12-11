@@ -1,83 +1,77 @@
-// src/app/api/trap-fam/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { upsertBrevoContact, sendBrevoWelcome } from "@/lib/brevo";
+// src/app/api/sms/status/route.ts
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = (await req.json().catch(() => ({}))) as {
-      name?: string;
-      email?: string;
-      phone?: string;
-      city?: string;
-      state?: string;
-      zip?: string;
-      country?: string;
-      smsOptIn?: boolean;
-    };
+export const dynamic = "force-dynamic";
 
-    const email = body.email?.trim();
-    if (!email) {
-      return NextResponse.json(
-        { ok: false, error: "Email is required." },
-        { status: 400 }
-      );
-    }
+export async function GET() {
+  const baseUrl = process.env.TC_SMS_SERVER_BASE_URL;
+  const apiKey = process.env.TC_SMS_SERVER_API_KEY;
 
-    const lowerEmail = email.toLowerCase();
-
-    // Just for analytics / Brevo logic if you want it later
-    const hasPhone = Boolean(body.phone && body.phone.trim());
-    const smsOptIn = Boolean(body.smsOptIn && hasPhone);
-
-    // 🔹 Prisma User: only touch fields that actually exist on this model.
-    // If your prisma/schema.prisma only has id / name / email,
-    // this will type-check cleanly.
-    const user = await prisma.user.upsert({
-      where: { email: lowerEmail },
-      update: {
-        name: body.name || undefined,
-      },
-      create: {
-        email: lowerEmail,
-        name: body.name || null,
-      },
-    });
-
-    // 🔹 Full profile goes to Brevo (no type issues here)
-    const contactResult = await upsertBrevoContact({
-      email: lowerEmail,
-      name: body.name,
-      phone: hasPhone ? body.phone : undefined,
-      city: body.city,
-      state: body.state,
-      postalCode: body.zip,
-      country: body.country,
-      // if you ever add SMS-related attributes in Brevo, you can hook smsOptIn here
-    });
-
-    const welcomeResult = await sendBrevoWelcome({
-      email: lowerEmail,
-      name: body.name,
-    });
-
-    const ok = contactResult.ok && welcomeResult.ok;
+  // If SMS server is not configured, don't throw – just report "not configured"
+  if (!baseUrl || !apiKey) {
+    console.warn(
+      "[SMS_STATUS] TC_SMS_SERVER_BASE_URL or TC_SMS_SERVER_API_KEY is not set. Returning not-configured status."
+    );
 
     return NextResponse.json(
       {
-        ok,
-        userId: user.id,
-        contactResult,
-        welcomeResult,
-        smsOptIn, // purely informational for the frontend
+        ok: false,
+        configured: false,
+        status: "not_configured",
+        detail: "SMS server environment variables are not set on this deployment.",
       },
-      { status: ok ? 200 : 500 }
+      { status: 200 }
+    );
+  }
+
+  try {
+    const res = await fetch(`${baseUrl}/health`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      },
+      // This is a simple health check; don't cache it aggressively
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error("[SMS_STATUS] Health check failed:", res.status, text);
+
+      return NextResponse.json(
+        {
+          ok: false,
+          configured: true,
+          status: "unhealthy",
+          httpStatus: res.status,
+        },
+        { status: 200 }
+      );
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    return NextResponse.json(
+      {
+        ok: true,
+        configured: true,
+        status: "healthy",
+        data,
+      },
+      { status: 200 }
     );
   } catch (err) {
-    console.error("[TRAP_FAM_ERROR]", err);
+    console.error("[SMS_STATUS] Error calling SMS server:", err);
+
     return NextResponse.json(
-      { ok: false, error: "Unexpected error." },
-      { status: 500 }
+      {
+        ok: false,
+        configured: true,
+        status: "error",
+        detail: "Failed to reach SMS server.",
+      },
+      { status: 200 }
     );
   }
 }
