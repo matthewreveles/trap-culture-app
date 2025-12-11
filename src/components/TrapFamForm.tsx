@@ -1,15 +1,26 @@
-// src/components/TrapFamForm.tsx
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 type Status = "idle" | "submitting" | "success" | "error";
+
+type TrapFamFormState = {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  smsOptIn: boolean;
+};
 
 export default function TrapFamForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<TrapFamFormState>({
     name: "",
     email: "",
     phone: "",
@@ -17,9 +28,10 @@ export default function TrapFamForm() {
     state: "",
     zip: "",
     country: "USA",
+    smsOptIn: false,
   });
 
-  function update<K extends keyof typeof form>(key: K, value: string) {
+  function update<K extends keyof TrapFamFormState>(key: K, value: TrapFamFormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }));
   }
 
@@ -43,7 +55,8 @@ export default function TrapFamForm() {
         console.error("[TrapFam] error response:", data);
         setStatus("error");
         setMessage(
-          data?.error || "Something went wrong joining Trap Fam. Try again in a moment."
+          data?.error ||
+            "Something went wrong joining Trap Fam. Try again in a moment."
         );
         return;
       }
@@ -167,10 +180,28 @@ export default function TrapFamForm() {
         </div>
       </div>
 
+      {/* SMS opt-in checkbox */}
+      <label className="flex items-start gap-2 text-xs leading-relaxed text-white/70 light:text-[#14081b]/80">
+        <input
+          type="checkbox"
+          checked={form.smsOptIn}
+          onChange={e => update("smsOptIn", e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border border-white/40 bg-transparent"
+        />
+        <span>
+          I agree to receive marketing SMS messages from Trap Culture at the
+          phone number provided. Message and data rates may apply. Reply{" "}
+          <span className="font-semibold">STOP</span> to opt out,{" "}
+          <span className="font-semibold">HELP</span> for help. Consent is not
+          required to join Trap Fam.
+        </span>
+      </label>
+
       <p className="text-xs leading-relaxed text-white/55 light:text-[#14081b]/75">
-        By joining Trap Fam you agree to occasional emails about events,
-        drops, and weird art projects. Every message includes an unsubscribe
-        link that lets you bail in one click.
+        By joining Trap Fam you agree to occasional emails about events, drops,
+        and weird art projects. Every email includes an unsubscribe link that
+        lets you bail in one click. SMS preferences can be changed at any time
+        by replying STOP.
       </p>
 
       <button
@@ -180,6 +211,24 @@ export default function TrapFamForm() {
       >
         {status === "submitting" ? "Joining…" : "Join Trap Fam"}
       </button>
+
+      <p className="text-[11px] leading-relaxed text-white/55 light:text-[#14081b]/70">
+        By continuing, you agree to our{" "}
+        <Link
+          href="/terms"
+          className="underline underline-offset-2 hover:opacity-80"
+        >
+          Terms &amp; Conditions
+        </Link>{" "}
+        and{" "}
+        <Link
+          href="/privacy"
+          className="underline underline-offset-2 hover:opacity-80"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
 
       {status === "success" && message && (
         <p className="text-xs mt-2 text-emerald-400">{message}</p>

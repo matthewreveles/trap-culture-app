@@ -16,6 +16,21 @@ model User {
   image         String?
   passwordHash  String?
 
+  // Profile fields for contact + location
+  phone   String?
+  street  String?
+  city    String?
+  state   String?
+  zip     String?
+  country String?
+
+  // SMS consent + status
+  smsOptIn     Boolean   @default(false)
+  smsOptInAt   DateTime?
+  smsOptOutAt  DateTime?
+  smsStatus    String?   // e.g. "active", "stopped", "help"
+  smsOptSource String?   // e.g. "trap_fam_form", "signup_form"
+
   accounts       Account[]
   sessions       Session[]
   authenticators Authenticator[]

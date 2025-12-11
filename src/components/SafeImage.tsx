@@ -1,92 +1,53 @@
 // src/components/SafeImage.tsx
-import Image, { type ImageProps } from "next/image";
+import React from "react";
+import Image from "next/image";
 
-interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
+type SafeImageProps = Omit<
+  React.ComponentProps<typeof Image>,
+  "src" | "alt"
+> & {
   src?: string | null;
   alt?: string;
-}
+};
 
-/**
- * Decide whether we should pass this src through next/image.
- * We only optimize:
- * - local assets ("/foo.png")
- * - trapcultureaz.com images
- */
+// These should stay in sync with next.config.ts where possible.
+const ALLOWED_IMAGE_HOSTS = [
+  "cdn.shopify.com",
+  "trapcultureaz.com",
+  "www.trapcultureaz.com",
+];
+
 function canUseNextImage(src: string): boolean {
+  // Local /public assets are always fine.
+  if (src.startsWith("/")) return true;
+
   try {
-    // Relative path -> treat as local asset
-    if (src.startsWith("/")) return true;
-
-    const { hostname } = new URL(src);
-
-    return (
-      hostname === "trapcultureaz.com" ||
-      hostname === "www.trapcultureaz.com"
-    );
+    const url = new URL(src);
+    return ALLOWED_IMAGE_HOSTS.includes(url.hostname);
   } catch {
-    // If URL parsing fails, play it safe and *don’t* use next/image.
+    // If it's not a valid URL and not a local path, play it safe.
     return false;
   }
 }
 
-export default function SafeImage({
-  src,
-  alt = "",
-  className,
-  ...props
-}: SafeImageProps) {
-  // No src? Render a simple placeholder box.
+export function SafeImage(props: SafeImageProps) {
+  const { src, alt = "", ...rest } = props;
+
   if (!src) {
-    return (
-      <div
-        className={`flex h-full w-full items-center justify-center text-xs text-zinc-400 ${
-          className ?? ""
-        }`}
-      >
-        No image
-      </div>
-    );
+    return null;
   }
 
-  // For any non-TrapCulture / non-local URL, use a plain <img>
-  // so we don’t trigger next/image domain restrictions.
-  if (!canUseNextImage(src)) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className={className}
-        loading="lazy"
-      />
-    );
+  if (canUseNextImage(src)) {
+    // Use Next's optimized <Image /> for known-safe hosts.
+    return <Image src={src} alt={alt} {...rest} />;
   }
 
-  // From here down, we’re safe to use next/image.
-  const { width, height, ...rest } = props;
+  // Fallback: plain <img> for any unknown/one-off host
+  // so Next's image config doesn't crash the page.
+  const { fill, ...restWithoutFill } = rest as any;
 
-  // If width & height are provided, use standard fixed-size image.
-  if (typeof width === "number" && typeof height === "number") {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        className={className}
-        {...rest}
-      />
-    );
-  }
-
-  // Otherwise, use fill layout inside a relative, sized parent.
   return (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      sizes={props.sizes ?? "100vw"}
-      className={className}
-      {...rest}
-    />
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} {...restWithoutFill} />
   );
 }

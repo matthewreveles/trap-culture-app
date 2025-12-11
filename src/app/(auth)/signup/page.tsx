@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ type FormState = {
   country: string;
   password: string;
   confirm: string;
+  smsOptIn: boolean;
 };
 
 function SignupForm() {
@@ -32,6 +34,7 @@ function SignupForm() {
     country: "USA",
     password: "",
     confirm: "",
+    smsOptIn: false,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +48,7 @@ function SignupForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +76,7 @@ function SignupForm() {
           state: form.state || null,
           zip: form.zip || null,
           country: form.country || null,
+          smsOptIn: form.smsOptIn, // safe even if backend ignores it
         }),
       });
 
@@ -127,7 +131,7 @@ function SignupForm() {
         </div>
 
         <div>
-          <label className="tc-label">Phone (optional)</label>
+          <label className="tc-label">Phone</label>
           <input
             type="tel"
             name="phone"
@@ -139,7 +143,7 @@ function SignupForm() {
         </div>
 
         <div>
-          <label className="tc-label">Street address (optional)</label>
+          <label className="tc-label">Street address</label>
           <input
             name="street"
             value={form.street}
@@ -223,6 +227,45 @@ function SignupForm() {
             onChange={handleChange}
             className={inputClasses}
           />
+        </div>
+
+        {/* SMS opt-in + legal copy */}
+        <div className="space-y-3 pt-2">
+          <label className="flex items-start gap-2 text-xs text-white/70 light:text-[#14081b]/80">
+            <input
+              type="checkbox"
+              checked={form.smsOptIn}
+              onChange={e =>
+                setForm(prev => ({ ...prev, smsOptIn: e.target.checked }))
+              }
+              className="mt-0.5 h-4 w-4 rounded border border-white/40 bg-transparent"
+            />
+            <span className="leading-relaxed">
+              I agree to receive marketing SMS messages from Trap Culture at the
+              phone number provided. Message and data rates may apply. Reply{" "}
+              <span className="font-semibold">STOP</span> to opt out,{" "}
+              <span className="font-semibold">HELP</span> for help. Consent is
+              not required to create an account.
+            </span>
+          </label>
+
+          <p className="text-[11px] leading-relaxed text-white/55 light:text-[#14081b]/70">
+            By creating an account, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="underline underline-offset-2 hover:opacity-80"
+            >
+              Terms &amp; Conditions
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="underline underline-offset-2 hover:opacity-80"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </div>
 
         {error && <p className="tc-body-text-sm text-red-400">{error}</p>}
