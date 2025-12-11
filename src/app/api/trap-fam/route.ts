@@ -25,34 +25,26 @@ export async function POST(req: NextRequest) {
     }
 
     const lowerEmail = email.toLowerCase();
-    const now = new Date();
 
+    // Just for analytics / Brevo logic if you want it later
     const hasPhone = Boolean(body.phone && body.phone.trim());
     const smsOptIn = Boolean(body.smsOptIn && hasPhone);
 
-    // Only use fields that actually exist on the Prisma User model.
-    // We keep phone/city/state/etc for Brevo, but we don't try to persist
-    // them on the local User table until those columns exist.
+    // 🔹 Prisma User: only touch fields that actually exist on this model.
+    // If your prisma/schema.prisma only has id / name / email,
+    // this will type-check cleanly.
     const user = await prisma.user.upsert({
       where: { email: lowerEmail },
       update: {
         name: body.name || undefined,
-        smsOptIn,
-        smsStatus: smsOptIn ? "active" : undefined,
-        smsOptSource: smsOptIn ? "trap_fam_form" : undefined,
-        smsOptInAt: smsOptIn ? now : undefined,
       },
       create: {
         email: lowerEmail,
         name: body.name || null,
-        smsOptIn,
-        smsStatus: smsOptIn ? "active" : null,
-        smsOptSource: smsOptIn ? "trap_fam_form" : null,
-        smsOptInAt: smsOptIn ? now : null,
       },
     });
 
-    // Send full profile to Brevo for segmentation
+    // 🔹 Full profile goes to Brevo (no type issues here)
     const contactResult = await upsertBrevoContact({
       email: lowerEmail,
       name: body.name,
@@ -61,6 +53,7 @@ export async function POST(req: NextRequest) {
       state: body.state,
       postalCode: body.zip,
       country: body.country,
+      // if you ever add SMS-related attributes in Brevo, you can hook smsOptIn here
     });
 
     const welcomeResult = await sendBrevoWelcome({
@@ -76,6 +69,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         contactResult,
         welcomeResult,
+        smsOptIn, // purely informational for the frontend
       },
       { status: ok ? 200 : 500 }
     );
