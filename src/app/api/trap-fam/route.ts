@@ -5,71 +5,67 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const baseUrl = process.env.TC_SMS_SERVER_BASE_URL;
-  const apiKey = process.env.TC_SMS_SERVER_API_KEY;
 
-  // If SMS server is not configured, don't throw – just report "not configured"
-  if (!baseUrl || !apiKey) {
+  // If the SMS server URL is not configured, do NOT throw.
+  // Just report that SMS is not configured so the UI can handle it.
+  if (!baseUrl) {
     console.warn(
-      "[SMS_STATUS] TC_SMS_SERVER_BASE_URL or TC_SMS_SERVER_API_KEY is not set. Returning not-configured status."
+      "[SMS_STATUS] TC_SMS_SERVER_BASE_URL is not set. Returning unconfigured status."
     );
 
     return NextResponse.json(
       {
         ok: false,
         configured: false,
-        status: "not_configured",
-        detail: "SMS server environment variables are not set on this deployment.",
+        upstreamReachable: false,
+        message: "SMS server base URL is not configured for this deployment.",
       },
       { status: 200 }
     );
   }
 
   try {
-    const res = await fetch(`${baseUrl}/health`, {
+    const url = baseUrl.replace(/\/$/, "") + "/health";
+
+    const res = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-      },
-      // This is a simple health check; don't cache it aggressively
+      headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error("[SMS_STATUS] Health check failed:", res.status, text);
+    const data = await res.json().catch(() => null);
 
+    if (!res.ok) {
+      console.error("[SMS_STATUS] Upstream returned non-OK:", res.status, data);
       return NextResponse.json(
         {
           ok: false,
           configured: true,
-          status: "unhealthy",
-          httpStatus: res.status,
+          upstreamReachable: false,
+          status: res.status,
+          upstream: data,
         },
         { status: 200 }
       );
     }
 
-    const data = await res.json().catch(() => ({}));
-
     return NextResponse.json(
       {
         ok: true,
         configured: true,
-        status: "healthy",
-        data,
+        upstreamReachable: true,
+        upstream: data,
       },
       { status: 200 }
     );
   } catch (err) {
-    console.error("[SMS_STATUS] Error calling SMS server:", err);
-
+    console.error("[SMS_STATUS] Error reaching SMS server:", err);
     return NextResponse.json(
       {
         ok: false,
         configured: true,
-        status: "error",
-        detail: "Failed to reach SMS server.",
+        upstreamReachable: false,
+        error: "Failed to reach SMS server.",
       },
       { status: 200 }
     );

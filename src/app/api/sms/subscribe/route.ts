@@ -1,65 +1,104 @@
 // src/app/api/sms/subscribe/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const SMS_BASE = process.env.TC_SMS_SERVER_BASE_URL;
+export const dynamic = "force-dynamic";
 
-if (!SMS_BASE) {
-  throw new Error("TC_SMS_SERVER_BASE_URL is not set");
-}
+type SubscribeBody = {
+  phone?: string;
+  name?: string;
+  source?: string;
+};
 
-export async function POST(req: Request) {
-  let body: any;
+export async function POST(req: NextRequest) {
+  const baseUrl = process.env.TC_SMS_SERVER_BASE_URL;
 
+  // Again, no throwing if env is missing.
+  if (!baseUrl) {
+    console.warn(
+      "[SMS_SUBSCRIBE] TC_SMS_SERVER_BASE_URL is not set. Treating as no-op."
+    );
+
+    return NextResponse.json(
+      {
+        ok: false,
+        configured: false,
+        message:
+          "SMS server is not configured for this deployment. Subscription was not forwarded upstream.",
+      },
+      { status: 200 }
+    );
+  }
+
+  let body: SubscribeBody;
   try {
-    body = await req.json();
+    body = (await req.json().catch(() => ({}))) as SubscribeBody;
   } catch {
     return NextResponse.json(
-      { ok: false, error: "Invalid JSON body" },
+      { ok: false, configured: true, error: "Invalid JSON body." },
       { status: 400 }
     );
   }
 
-  const { name, phone, tags, source } = body || {};
-
-  if (!phone || typeof phone !== "string") {
+  if (!body.phone?.trim()) {
     return NextResponse.json(
-      { ok: false, error: "Missing or invalid phone" },
+      { ok: false, configured: true, error: "Phone number is required." },
       { status: 400 }
     );
   }
 
-  // Default tags/source for Trap Fam if they are not passed in explicitly
   const payload = {
-    name: name ?? null,
-    phone,
-    tags: Array.isArray(tags) ? tags : ["trap_fam"],
-    source: source ?? "trap-app",
+    phone: body.phone.trim(),
+    name: body.name?.trim() || null,
+    source: body.source?.trim() || "trap-app",
   };
 
   try {
-    const res = await fetch(`${SMS_BASE}/sms/subscribe`, {
+    const url = baseUrl.replace(/\/$/, "") + "/sms/subscribe";
+
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       cache: "no-store",
     });
 
-    const data = await res.json().catch(() => ({
-      ok: false,
-      error: "Invalid JSON from SMS server",
-    }));
+    const data = await res.json().catch(() => null);
 
-    // Optional debug logging if the upstream failed
     if (!res.ok) {
-      console.error("[SMS_SUBSCRIBE] upstream error", res.status, data);
+      console.error(
+        "[SMS_SUBSCRIBE] Upstream returned non-OK:",
+        res.status,
+        data
+      );
+      return NextResponse.json(
+        {
+          ok: false,
+          configured: true,
+          upstreamStatus: res.status,
+          upstream: data,
+        },
+        { status: 200 }
+      );
     }
 
-    return NextResponse.json(data, { status: res.status });
-  } catch (err) {
-    console.error("Error calling SMS subscribe:", err);
     return NextResponse.json(
-      { ok: false, error: "Failed to reach SMS server" },
-      { status: 502 }
+      {
+        ok: true,
+        configured: true,
+        upstreamStatus: res.status,
+        upstream: data,
+      },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("[SMS_SUBSCRIBE] Error calling SMS server:", err);
+    return NextResponse.json(
+      {
+        ok: false,
+        configured: true,
+        error: "Failed to reach SMS server.",
+      },
+      { status: 200 }
     );
   }
 }
