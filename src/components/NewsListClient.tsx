@@ -1,8 +1,10 @@
 // src/components/NewsListClient.tsx
 "use client";
 
+"use client";
+
 import { useCallback, useState } from "react";
-import SafeImage from "@/components/SafeImage";
+import { SafeImage } from "@/components/SafeImage";
 
 export type TrapNewsItem = {
   id: string;
