@@ -1,81 +1,86 @@
 // src/app/api/sms/subscribe/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+const BASE_URL = process.env.TC_SMS_SERVER_BASE_URL;
+const AUTH_TOKEN = process.env.TC_SMS_SERVER_AUTH_TOKEN;
 
 type SubscribeBody = {
   phone?: string;
   name?: string;
-  source?: string;
+  email?: string;
+  tags?: string[];
 };
 
+/**
+ * Subscribe a user to SMS updates via the TC SMS server.
+ *
+ * This route is intentionally safe for environments where the SMS
+ * server is not configured. It never throws at module load.
+ */
 export async function POST(req: NextRequest) {
-  const baseUrl = process.env.TC_SMS_SERVER_BASE_URL;
+  let body: SubscribeBody;
 
-  // Again, no throwing if env is missing.
-  if (!baseUrl) {
-    console.warn(
-      "[SMS_SUBSCRIBE] TC_SMS_SERVER_BASE_URL is not set. Treating as no-op."
+  try {
+    body = (await req.json()) as SubscribeBody;
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Invalid JSON body." },
+      { status: 400 }
     );
+  }
 
+  const phone = body.phone?.trim();
+  if (!phone) {
+    return NextResponse.json(
+      { ok: false, error: "Phone number is required." },
+      { status: 400 }
+    );
+  }
+
+  // If SMS server is not configured, report that but do not crash.
+  if (!BASE_URL || !AUTH_TOKEN) {
     return NextResponse.json(
       {
         ok: false,
-        configured: false,
+        smsServerConfigured: false,
+        status: "not_configured",
         message:
-          "SMS server is not configured for this deployment. Subscription was not forwarded upstream.",
+          "TC SMS server is not configured for this environment. Add TC_SMS_SERVER_BASE_URL and TC_SMS_SERVER_AUTH_TOKEN to enable SMS subscriptions.",
       },
       { status: 200 }
     );
   }
 
-  let body: SubscribeBody;
   try {
-    body = (await req.json().catch(() => ({}))) as SubscribeBody;
-  } catch {
-    return NextResponse.json(
-      { ok: false, configured: true, error: "Invalid JSON body." },
-      { status: 400 }
+    // Adjust the path `/api/subscribers` to whatever your SMS server expects.
+    const res = await fetch(
+      `${BASE_URL.replace(/\/$/, "")}/api/subscribers`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${AUTH_TOKEN}`,
+        },
+        body: JSON.stringify({
+          phone,
+          name: body.name,
+          email: body.email,
+          tags: body.tags ?? ["trap-fam"],
+          source: "trap-culture-app",
+        }),
+      }
     );
-  }
-
-  if (!body.phone?.trim()) {
-    return NextResponse.json(
-      { ok: false, configured: true, error: "Phone number is required." },
-      { status: 400 }
-    );
-  }
-
-  const payload = {
-    phone: body.phone.trim(),
-    name: body.name?.trim() || null,
-    source: body.source?.trim() || "trap-app",
-  };
-
-  try {
-    const url = baseUrl.replace(/\/$/, "") + "/sms/subscribe";
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
 
     const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      console.error(
-        "[SMS_SUBSCRIBE] Upstream returned non-OK:",
-        res.status,
-        data
-      );
       return NextResponse.json(
         {
           ok: false,
-          configured: true,
-          upstreamStatus: res.status,
-          upstream: data,
+          smsServerConfigured: true,
+          status: "error",
+          httpStatus: res.status,
+          data,
         },
         { status: 200 }
       );
@@ -84,19 +89,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
-        configured: true,
-        upstreamStatus: res.status,
-        upstream: data,
+        smsServerConfigured: true,
+        status: "subscribed",
+        data,
       },
       { status: 200 }
     );
   } catch (err) {
-    console.error("[SMS_SUBSCRIBE] Error calling SMS server:", err);
+    console.error("[TC_SMS_SUBSCRIBE_ERROR]", err);
     return NextResponse.json(
       {
         ok: false,
-        configured: true,
-        error: "Failed to reach SMS server.",
+        smsServerConfigured: true,
+        status: "error",
+        message: "Unexpected error talking to the SMS server.",
       },
       { status: 200 }
     );

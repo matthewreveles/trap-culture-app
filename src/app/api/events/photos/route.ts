@@ -40,12 +40,22 @@ type GraphError = {
   fbtrace_id?: string;
 };
 
+type ApiPhoto = {
+  id: string;
+  caption: string;
+  created_time: string;
+  imageUrl: string;
+  width: number;
+  height: number;
+  link: string | null;
+};
+
 // ---- Helpers ----
 
 function buildAlbumsUrl() {
   const params = new URLSearchParams({
     fields: "id,name,count,created_time",
-    limit: "50", // plenty for your current album list
+    limit: "50",
     access_token: ACCESS_TOKEN || "",
   });
 
@@ -62,12 +72,8 @@ function buildAlbumPhotosUrl(albumId: string, limit = 200) {
   return `https://graph.facebook.com/${GRAPH_VERSION}/${albumId}/photos?${params.toString()}`;
 }
 
-async function fetchJson<T = any>(url: string): Promise<T> {
-  const res = await fetch(url, {
-    method: "GET",
-    cache: "no-store",
-  });
-
+async function fetchJson<T = unknown>(url: string): Promise<T> {
+  const res = await fetch(url, { method: "GET", cache: "no-store" });
   const text = await res.text();
 
   try {
@@ -82,17 +88,19 @@ async function fetchJson<T = any>(url: string): Promise<T> {
   }
 }
 
+function isGraphError(obj: unknown): obj is { error: GraphError } {
+  if (!obj || typeof obj !== "object") return false;
+  return "error" in obj;
+}
+
 // ---- Main handler ----
 
 export async function GET(req: NextRequest) {
   if (!PAGE_ID || !ACCESS_TOKEN) {
-    console.error(
-      "[/api/events/photos] Missing PAGE_ID or ACCESS_TOKEN env vars",
-      {
-        PAGE_ID: !!PAGE_ID,
-        ACCESS_TOKEN: !!ACCESS_TOKEN,
-      }
-    );
+    console.error("[/api/events/photos] Missing PAGE_ID or ACCESS_TOKEN env vars", {
+      PAGE_ID: !!PAGE_ID,
+      ACCESS_TOKEN: !!ACCESS_TOKEN,
+    });
 
     return NextResponse.json(
       {
@@ -113,7 +121,7 @@ export async function GET(req: NextRequest) {
   try {
     // 1) Fetch albums for this page
     const albumsUrl = buildAlbumsUrl();
-    console.log("[/api/events/photos] Fetching albums:", albumsUrl);
+    console.log("[/api/events/photos] Fetching albums");
 
     const albumsResponse = await fetchJson<{
       data?: GraphAlbum[];
@@ -121,10 +129,11 @@ export async function GET(req: NextRequest) {
       error?: GraphError;
     }>(albumsUrl);
 
-    if (albumsResponse.error) {
+    if (albumsResponse?.error) {
       console.error("[/api/events/photos] Album fetch error:", {
         error: albumsResponse.error,
       });
+
       return NextResponse.json(
         {
           success: false,
@@ -133,7 +142,6 @@ export async function GET(req: NextRequest) {
           error: `Graph API album error: ${
             albumsResponse.error.message || "Unknown error"
           }`,
-          raw: JSON.stringify(albumsResponse),
         },
         { status: 500 }
       );
@@ -141,10 +149,9 @@ export async function GET(req: NextRequest) {
 
     const albums = albumsResponse.data || [];
 
-    // Filter out non-event junk if you want (cover/profile),
-    // while keeping Mobile uploads + all event albums.
+    // Filter out obvious non-event junk (keep everything else)
     const filteredAlbums = albums.filter((album) => {
-      const name = album.name?.toLowerCase() || "";
+      const name = (album.name || "").toLowerCase();
       if (name.includes("cover photos")) return false;
       if (name.includes("profile pictures")) return false;
       return true;
@@ -153,18 +160,12 @@ export async function GET(req: NextRequest) {
     console.log("[/api/events/photos] Albums discovered:", {
       total: albums.length,
       filtered: filteredAlbums.length,
-      names: filteredAlbums.map((a) => a.name),
     });
 
     // 2) Fetch photos from each album in parallel
     const photosByAlbum = await Promise.all(
       filteredAlbums.map(async (album) => {
         const url = buildAlbumPhotosUrl(album.id);
-        console.log("[/api/events/photos] Fetching album photos:", {
-          albumId: album.id,
-          albumName: album.name,
-          url,
-        });
 
         const albumPhotosRes = await fetchJson<{
           data?: GraphPhoto[];
@@ -172,15 +173,12 @@ export async function GET(req: NextRequest) {
           error?: GraphError;
         }>(url);
 
-        if (albumPhotosRes.error) {
-          console.error(
-            "[/api/events/photos] Error fetching album photos:",
-            {
-              albumId: album.id,
-              albumName: album.name,
-              error: albumPhotosRes.error,
-            }
-          );
+        if (albumPhotosRes?.error) {
+          console.error("[/api/events/photos] Error fetching album photos:", {
+            albumId: album.id,
+            albumName: album.name,
+            error: albumPhotosRes.error,
+          });
           return [] as GraphPhoto[];
         }
 
@@ -188,12 +186,12 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    // 3) Flatten, map, and sort newest → oldest
-    const flattened = photosByAlbum
+    // 3) Flatten, normalize, sort newest → oldest
+    const flattened: ApiPhoto[] = photosByAlbum
       .flat()
       .filter((p) => p.images && p.images.length > 0 && p.created_time)
       .map((p) => {
-        const bestImage = p.images![0]; // Graph usually gives largest first
+        const bestImage = p.images![0]; // largest first
         return {
           id: p.id,
           caption: p.name ?? "",
@@ -205,14 +203,22 @@ export async function GET(req: NextRequest) {
         };
       })
       .sort((a, b) => {
-        // Newest first
         const aTime = new Date(a.created_time).getTime();
         const bTime = new Date(b.created_time).getTime();
         return bTime - aTime;
       });
 
-    const totalCount = flattened.length;
-    const slice = flattened.slice(offset, offset + PAGE_SIZE);
+    // 4) Dedupe by photo id (Graph can repeat photos across albums / “mobile uploads”)
+    // Keep ordering from `flattened` (already newest-first).
+    const uniqueMap = new Map<string, ApiPhoto>();
+    for (const p of flattened) {
+      if (!uniqueMap.has(p.id)) uniqueMap.set(p.id, p);
+    }
+    const uniquePhotos = Array.from(uniqueMap.values());
+
+    // 5) Paginate (offset cursor)
+    const totalCount = uniquePhotos.length;
+    const slice = uniquePhotos.slice(offset, offset + PAGE_SIZE);
     const nextCursor =
       offset + PAGE_SIZE < totalCount ? String(offset + PAGE_SIZE) : null;
 
@@ -221,6 +227,7 @@ export async function GET(req: NextRequest) {
       returned: slice.length,
       offset,
       nextCursor,
+      deduped: flattened.length - uniquePhotos.length,
     });
 
     return NextResponse.json({
