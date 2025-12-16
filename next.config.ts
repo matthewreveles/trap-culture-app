@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   images: {
-    // Allow optimized images from our main external hosts.
     remotePatterns: [
       // Shopify product images
       {
@@ -13,7 +12,6 @@ const nextConfig: NextConfig = {
         hostname: "cdn.shopify.com",
         pathname: "/s/files/**",
       },
-
       // Trap Culture WordPress uploads
       {
         protocol: "https",
@@ -25,13 +23,7 @@ const nextConfig: NextConfig = {
         hostname: "www.trapcultureaz.com",
         pathname: "/wp-content/uploads/**",
       },
-
-      // Facebook CDN (Past Events photo grid)
-      {
-        protocol: "https",
-        hostname: "scontent.xx.fbcdn.net",
-        pathname: "/**",
-      },
+      // Facebook CDN (fbcdn / xx.fbcdn.net variants)
       {
         protocol: "https",
         hostname: "scontent-iad3-1.xx.fbcdn.net",
@@ -44,20 +36,24 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "scontent-iad3-3.xx.fbcdn.net",
+        hostname: "scontent.xx.fbcdn.net",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "scontent-iad3-4.xx.fbcdn.net",
+        hostname: "lookaside.facebook.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "platform-lookaside.fbsbx.com",
         pathname: "/**",
       },
     ],
   },
 
-  experimental: {
-    typedRoutes: true,
-  },
+  // Next 16 moved this out of experimental
+  typedRoutes: true,
 };
 
 export default nextConfig;
