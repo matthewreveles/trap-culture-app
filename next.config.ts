@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
         hostname: "cdn.shopify.com",
         pathname: "/s/files/**",
       },
+
       // Trap Culture WordPress uploads
       {
         protocol: "https",
@@ -23,6 +24,33 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.trapcultureaz.com",
         pathname: "/wp-content/uploads/**",
+      },
+
+      // Facebook CDN (Past Events photo grid)
+      {
+        protocol: "https",
+        hostname: "scontent.xx.fbcdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "scontent-iad3-1.xx.fbcdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "scontent-iad3-2.xx.fbcdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "scontent-iad3-3.xx.fbcdn.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "scontent-iad3-4.xx.fbcdn.net",
+        pathname: "/**",
       },
     ],
   },
