@@ -58,10 +58,13 @@ async function syncToBrevoContact(payload: {
 
 // Optional: send welcome email via Brevo template
 async function sendBrevoWelcomeEmail(email: string, name?: string | null) {
-  if (!BREVO_API_KEY || !BREVO_WELCOME_TEMPLATE_ID) return;
+  if (!BREVO_API_KEY || !BREVO_WELCOME_TEMPLATE_ID) {
+    console.warn("[BREVO_WELCOME] Skipping: missing API key or template id");
+    return;
+  }
 
   try {
-    await fetch("https://api.brevo.com/v3/smtp/email", {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
         "api-key": BREVO_API_KEY,
@@ -80,10 +83,19 @@ async function sendBrevoWelcomeEmail(email: string, name?: string | null) {
             : undefined,
       }),
     });
+
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      console.error("[BREVO_WELCOME_ERROR]", res.status, text);
+      return;
+    }
+
+    console.log("[BREVO_WELCOME_OK]", res.status, text);
   } catch (err) {
     console.error("[BREVO_WELCOME_ERROR]", err);
   }
 }
+
 
 export async function POST(req: Request) {
   try {

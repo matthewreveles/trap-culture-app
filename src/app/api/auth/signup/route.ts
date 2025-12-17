@@ -1,15 +1,9 @@
 // src/app/api/auth/signup/route.ts
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
+import { sendBrevoWelcome, upsertBrevoContact } from "@/lib/brevo";
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const BREVO_LIST_ID_SIGNUPS = process.env.BREVO_LIST_ID_SIGNUPS;
-
-/**
- * Minimal shape of the request body coming from /auth/signup form
- */
 interface SignupBody {
   name?: string;
   email?: string;
@@ -23,74 +17,32 @@ interface SignupBody {
   country?: string;
 }
 
-interface BrevoContactPayload {
-  email: string;
-  attributes?: Record<string, any>;
-  listIds?: number[];
-}
-
-/**
- * Best-effort add / update of the contact in Brevo.
- * Failures here are logged but do NOT block signup.
- */
-async function addContactToBrevo(payload: BrevoContactPayload) {
-  if (!BREVO_API_KEY) {
-    console.warn("[BREVO] BREVO_API_KEY not set; skipping contact sync.");
-    return;
-  }
-
-  try {
-    const res = await fetch("https://api.brevo.com/v3/contacts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    // 400 from Brevo is usually "Contact already exists" – not fatal.
-    if (!res.ok && res.status !== 400) {
-      const text = await res.text();
-      console.error("[BREVO] Failed to create/update contact:", res.status, text);
-    }
-  } catch (err) {
-    console.error("[BREVO] Error calling contacts API:", err);
-  }
-}
-
-/**
- * POST /api/auth/signup
- */
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as SignupBody;
 
-    const {
-      name,
-      email,
-      password,
+    const name = body?.name ?? null;
+    const emailRaw = body?.email ?? "";
+    const password = body?.password ?? "";
 
-      phone,
-      street,
-      city,
-      state,
-      zip,
-      country,
-    } = body;
+    const phone = body?.phone ?? "";
+    const street = body?.street ?? "";
+    const city = body?.city ?? "";
+    const state = body?.state ?? "";
+    const zip = body?.zip ?? "";
+    const country = body?.country ?? "";
 
-    if (!email || !password) {
+    if (!emailRaw || !password) {
       return NextResponse.json(
         { error: "Email and password are required." },
         { status: 400 }
       );
     }
 
-    const lowerEmail = String(email).toLowerCase();
+    const email = String(emailRaw).toLowerCase().trim();
 
-    // Check if user already exists
     const existing = await prisma.user.findUnique({
-      where: { email: lowerEmail },
+      where: { email },
     });
 
     if (existing) {
@@ -102,12 +54,10 @@ export async function POST(req: Request) {
 
     const passwordHash = await hash(password, 12);
 
-    // NOTE: DB fields here are kept conservative so we don't break your Prisma schema.
-    // If you later add phone/address to the User model, you can include them in `data: { ... }`.
     const user = await prisma.user.create({
       data: {
-        name: name ?? null,
-        email: lowerEmail,
+        name,
+        email,
         passwordHash,
       },
       select: {
@@ -117,37 +67,26 @@ export async function POST(req: Request) {
       },
     });
 
-    // Fire-and-forget Brevo contact sync
-    const brevoPayload: BrevoContactPayload = {
-      email: lowerEmail,
-      attributes: {
-        FIRSTNAME: name ?? "",
-        PHONE: phone ?? "",
-        STREET: street ?? "",
-        CITY: city ?? "",
-        STATE: state ?? "",
-        ZIP: zip ?? "",
-        COUNTRY: country ?? "",
-        SOURCE: "Trap Culture App Signup",
-      },
-    };
+    // Fire-and-forget marketing ops (do not block response)
+    upsertBrevoContact({
+      email,
+      name: user.name ?? undefined,
+      phone: phone || undefined,
+      addressLine1: street || undefined,
+      city: city || undefined,
+      state: state || undefined,
+      postalCode: zip || undefined,
+      country: country || undefined,
+    }).catch(() => {});
 
-    if (BREVO_LIST_ID_SIGNUPS) {
-      const parsed = Number(BREVO_LIST_ID_SIGNUPS);
-      if (!Number.isNaN(parsed)) {
-        brevoPayload.listIds = [parsed];
-      }
-    }
-
-    // Do not await in a way that blocks the response
-    addContactToBrevo(brevoPayload).catch(() => {});
+    sendBrevoWelcome({
+      email,
+      name: user.name ?? undefined,
+    }).catch(() => {});
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
     console.error("[SIGNUP_ERROR]", err);
-    return NextResponse.json(
-      { error: "Unexpected error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Unexpected error." }, { status: 500 });
   }
 }
